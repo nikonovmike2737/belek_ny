@@ -33,7 +33,7 @@ assert 'html{scroll-padding-top:76px}' in compact, "mobile scroll-padding-top mu
 assert '.section[id]{scroll-margin-top:76px}' in compact, "mobile section scroll-margin-top missing"
 assert '.mobile-menu-toggle{display:inline-flex' in compact, "mobile burger must be visible on mobile"
 assert '.nav{display:none}' in compact, "desktop navigation must be hidden on mobile"
-assert '@media print{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}' in compact, "mobile menu must be hidden in print/PDF"
+assert '@mediaprint{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}' in compact, "mobile menu must be hidden in print/PDF"
 
 assert "if(event.target.closest('a'))closeMenu()" in compact, "mobile menu must close after section selection"
 assert "if(event.key==='Escape')closeMenu()" in compact, "mobile menu must close on Escape"
