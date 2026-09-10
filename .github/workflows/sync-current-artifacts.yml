@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/sync-current-artifacts.yml"
-      - ".github/belek-sync-trigger"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -45,9 +44,10 @@ jobs:
           test "$(head -c 5 drive-current.pdf)" = "%PDF-"
           mv index.html.new index.html
 
-      - name: Maintain structured state and PDF source
+      - name: Maintain structured state and validate official hotel links
         run: |
           set -euo pipefail
+          test -s data/hotel-site-links.json
           python scripts/bootstrap_price_state.py
           python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
@@ -109,12 +109,12 @@ jobs:
           fi
           echo "version-match PASS ${VERSION}"
 
-      - name: Commit only when changed
+      - name: Commit only when tracked production artifacts actually changed
         run: |
           set -euo pipefail
           FILES="index.html belek_new_year_comparison_2026_2027_current.pdf data/current-price-state.json data/price-update-state.json report/BELEK_NY_REPORT_SOURCE.html"
           if git diff --quiet -- $FILES && [ -z "$(git ls-files --others --exclude-standard $FILES)" ]; then
-            echo "No artifact changes"
+            echo "No artifact changes; no commit and no production delta"
             exit 0
           fi
           git config user.name "belek-ny-drive-sync"
