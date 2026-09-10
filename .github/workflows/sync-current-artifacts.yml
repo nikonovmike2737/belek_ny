@@ -24,7 +24,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Download canonical HTML and PDF
+      - name: Download canonical artifacts
         env:
           DRIVE_HTML_FILE_ID: "1ujohc5SxxAKPfN9_D992PGkAjdDsGzvW"
           DRIVE_PDF_FILE_ID: "1ehz9z4MH3h6vaERvJGaOR8ZPaDK5-3es"
@@ -36,18 +36,14 @@ jobs:
             -o index.html.new
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
             "https://drive.usercontent.google.com/download?id=${DRIVE_PDF_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
-            -o belek_new_year_comparison_2026_2027_current.pdf.new
+            -o drive-current.pdf
 
           test -s index.html.new
           grep -qi "<!DOCTYPE html" index.html.new
           grep -qi "Отель на замену Bellis" index.html.new
-
-          test -s belek_new_year_comparison_2026_2027_current.pdf.new
-          test "$(head -c 5 belek_new_year_comparison_2026_2027_current.pdf.new)" = "%PDF-"
-
+          test -s drive-current.pdf
+          test "$(head -c 5 drive-current.pdf)" = "%PDF-"
           mv index.html.new index.html
-          mv belek_new_year_comparison_2026_2027_current.pdf.new \
-             belek_new_year_comparison_2026_2027_current.pdf
 
       - name: Maintain structured state and PDF source
         run: |
@@ -56,24 +52,61 @@ jobs:
           python scripts/build_pdf_source.py
           python scripts/validate_consistency.py
 
-      - name: Verify HTML and PDF report version match
+      - name: Select or regenerate matching PDF
         run: |
           set -euo pipefail
           python -m pip install --quiet pypdf
-          python - <<'PY'
+          VERSION="$(python - <<'PY'
           from pathlib import Path
-          from pypdf import PdfReader
           import re
           html = Path('index.html').read_text(encoding='utf-8')
           m = re.search(r'data-report-version=["\']([^"\']+)', html)
           if not m:
               raise SystemExit('HTML report version missing')
-          version = m.group(1)
-          text = '\n'.join((p.extract_text() or '') for p in PdfReader('belek_new_year_comparison_2026_2027_current.pdf').pages)
-          if version not in text:
-              raise SystemExit(f'PDF does not contain HTML report version {version}')
-          print('version-match PASS', version)
+          print(m.group(1))
           PY
+          )"
+
+          pdf_has_version() {
+            local pdf="$1"
+            PDF_PATH="$pdf" REPORT_VERSION="$VERSION" python - <<'PY'
+          from os import environ
+          from pypdf import PdfReader
+          path = environ['PDF_PATH']
+          version = environ['REPORT_VERSION']
+          text = '\n'.join((p.extract_text() or '') for p in PdfReader(path).pages)
+          raise SystemExit(0 if version in text else 1)
+          PY
+          }
+
+          if pdf_has_version drive-current.pdf; then
+            echo "Drive PDF matches HTML report version"
+            mv drive-current.pdf belek_new_year_comparison_2026_2027_current.pdf
+          elif [ -s belek_new_year_comparison_2026_2027_current.pdf ] && pdf_has_version belek_new_year_comparison_2026_2027_current.pdf; then
+            echo "Drive public download is stale; retaining checked-in matching PDF"
+            rm -f drive-current.pdf
+          else
+            echo "Drive public download is stale; regenerating PDF from canonical HTML"
+            CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+            if [ -z "$CHROME" ]; then
+              echo "No Chromium-compatible browser available for PDF regeneration" >&2
+              exit 1
+            fi
+            "$CHROME" --headless --no-sandbox --disable-gpu --no-pdf-header-footer \
+              --print-to-pdf="$(pwd)/belek_new_year_comparison_2026_2027_current.pdf.new" \
+              "file://$(pwd)/report/BELEK_NY_REPORT_SOURCE.html"
+            test -s belek_new_year_comparison_2026_2027_current.pdf.new
+            test "$(head -c 5 belek_new_year_comparison_2026_2027_current.pdf.new)" = "%PDF-"
+            mv belek_new_year_comparison_2026_2027_current.pdf.new \
+               belek_new_year_comparison_2026_2027_current.pdf
+            rm -f drive-current.pdf
+          fi
+
+          if ! pdf_has_version belek_new_year_comparison_2026_2027_current.pdf; then
+            echo "PDF does not contain HTML report version ${VERSION}" >&2
+            exit 1
+          fi
+          echo "version-match PASS ${VERSION}"
 
       - name: Commit only when changed
         run: |
