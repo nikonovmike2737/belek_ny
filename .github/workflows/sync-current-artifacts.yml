@@ -8,6 +8,7 @@ on:
       - "data/hotel-site-links.json"
       - "docs/HOTEL_SITE_LANGUAGE_PRIORITY_RULE.md"
       - "scripts/validate_hotel_site_language.py"
+      - "scripts/validate_mobile_navigation.py"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -55,6 +56,7 @@ jobs:
           python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
           python scripts/validate_hotel_site_language.py
+          python scripts/validate_mobile_navigation.py
           python scripts/validate_consistency.py
 
       - name: Select or regenerate matching PDF
