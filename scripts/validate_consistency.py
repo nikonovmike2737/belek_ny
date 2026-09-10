@@ -21,9 +21,10 @@ assert "HISTORICAL_SNAPSHOT" in html, "historical price labeling missing"
 assert "—" not in html, "public HTML contains forbidden em dash"
 assert "–" not in html, "public HTML contains forbidden en dash"
 
-# Hero family composition must stay readable and must not regress to a
-# semicolon-separated machine-like line.
-assert "2 взрослых<br>с 1 ребёнком<br>с 2 детьми" in html, "hero family composition must be three separate lines"
+# Hero family composition must stay readable. Accept equivalent HTML break
+# syntax (<br>, <br/> or <br />), but never a semicolon-separated line.
+family_pattern = r"2 взрослых\s*<br\s*/?>\s*с 1 ребёнком\s*<br\s*/?>\s*с 2 детьми"
+assert re.search(family_pattern, html, re.I), "hero family composition must be three separate lines"
 assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in html, "semicolon-separated family composition is forbidden"
 
 warnings = []
