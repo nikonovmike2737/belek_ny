@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+from datetime import datetime
 import json, re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -7,6 +8,8 @@ html = (ROOT / "index.html").read_text(encoding="utf-8")
 registry = json.loads((ROOT / "data" / "room-category-registry.json").read_text(encoding="utf-8"))
 state_path = ROOT / "data" / "current-price-state.json"
 state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else None
+price_update_state_path = ROOT / "data" / "price-update-state.json"
+price_update_state = json.loads(price_update_state_path.read_text(encoding="utf-8")) if price_update_state_path.exists() else None
 
 m = re.search(r'data-report-version=["\']([^"\']+)', html)
 assert m, "HTML report version marker missing"
@@ -27,10 +30,39 @@ family_pattern = r"2 взрослых\s*<br\s*/?>\s*с 1 ребёнком\s*<br\
 assert re.search(family_pattern, html, re.I), "hero family composition must be three separate lines"
 assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in html, "semicolon-separated family composition is forbidden"
 
+# Price update timestamp state. The legend carries both machine-readable
+# timestamps, while visible copy shows the previous published price update.
+legend_open_m = re.search(
+    r'<div\b([^>]*\bclass=["\'][^"\']*\bprice-trend-legend\b[^"\']*["\'][^>]*)>',
+    html,
+    re.I | re.S,
+)
+assert legend_open_m, "price trend legend missing"
+legend_attrs = legend_open_m.group(1)
+prev_time_m = re.search(r'data-previous-price-update-at=["\']([^"\']+)["\']', legend_attrs, re.I)
+curr_time_m = re.search(r'data-current-price-update-at=["\']([^"\']+)["\']', legend_attrs, re.I)
+assert prev_time_m and curr_time_m, "price update timestamp attributes missing"
+previous_price_update_at = prev_time_m.group(1)
+current_price_update_at = curr_time_m.group(1)
+previous_dt = datetime.fromisoformat(previous_price_update_at)
+current_dt = datetime.fromisoformat(current_price_update_at)
+assert previous_dt.tzinfo is not None and current_dt.tzinfo is not None, "price update timestamps must be timezone-aware"
+assert previous_dt < current_dt, "previous price update must be older than current price update"
+previous_display = previous_dt.strftime("%d.%m, %H:%M")
+legend_copy = f"Изменение с прошлого обновления цен {previous_display}"
+assert html.count(legend_copy) == 1, "price trend legend must show previous price update date/time exactly once"
+assert "Изменение с прошлого запроса:" not in html, "old price trend legend copy is forbidden"
+
+assert price_update_state is not None, "data/price-update-state.json missing"
+assert price_update_state.get("previous_price_update_at") == previous_price_update_at, "previous price update state differs from canonical HTML"
+assert price_update_state.get("current_price_update_at") == current_price_update_at, "current price update state differs from canonical HTML"
+assert price_update_state.get("previous_display") == previous_display, "previous price update display differs from canonical HTML"
+assert price_update_state.get("current_display") == current_dt.strftime("%d.%m, %H:%M"), "current price update display mismatch"
+assert price_update_state.get("report_version") == version, "price update state report version differs from canonical HTML"
+
 # Price trend arrows. Every public price cell stores the previous and current
 # comparable value plus the derived direction. The visual arrow must match the
 # numeric comparison exactly; unchanged values must stay visually quiet.
-assert html.count("Изменение с прошлого запроса:") == 1, "price trend legend must appear exactly once"
 style_m = re.search(r'<style id=["\']price-trend-style["\']>(.*?)</style>', html, re.I | re.S)
 assert style_m, "price trend style block missing"
 trend_style = style_m.group(1)
@@ -82,6 +114,10 @@ print(json.dumps({
     "report_version": version,
     "rooms": len(registry.get("rooms", [])),
     "quotes": len(state.get("quotes", [])) if state else 0,
+    "price_updates": {
+        "previous": previous_price_update_at,
+        "current": current_price_update_at,
+    },
     "price_trends": counts,
     "warnings": warnings
 }, ensure_ascii=False))
