@@ -53,10 +53,24 @@ a{color:inherit;text-decoration:none} .wrap{width:min(1260px,calc(100% - 28px));
 @media(max-width:680px){.cmp-food{grid-template-columns:1fr}.gastro-table .evidence{min-width:260px}}
 
 </style>
-<script id="belek-monitor-meta" type="application/json">{"report_version": "20260910T082500Z", "updated_at": "2026-09-10T08:25:00Z", "room_registry": "./data/room-category-registry.json", "price_state": "./data/current-price-state.json"}</script><style>
+<style>
 .snapshot-label{font-size:11px;color:#96aaa2;margin:0 0 8px;font-weight:700}.pdf-download-card{border:1px solid #496b5f;background:linear-gradient(135deg,#112a23,#0b1916);border-radius:22px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:24px}.pdf-download-card p{margin:8px 0 0;color:#cbd7d1;line-height:1.55;max-width:760px}.pdf-download-card .btn{display:inline-flex;text-decoration:none;white-space:nowrap}.report-updated{margin-top:10px;color:#8ea49b;font-size:12px}.live-price-note{border-left:3px solid var(--lime);padding:10px 12px;margin:14px 0;background:#0f211c;color:#cbd7d1;border-radius:0 10px 10px 0}.live-price-note b{color:#eef7f2}@media(max-width:680px){.pdf-download-card{display:block}.pdf-download-card .btn{margin-top:16px}}
 @media print{.nav,.compare-row,.compare-dock,.compare-modal,.card-actions{display:none!important}.pdf-download-card .btn{display:none!important}.hotel-card,.callout,.pbox,tr{break-inside:avoid}.section{break-before:auto}.hero{min-height:520px}.wrap{width:100%!important;max-width:none!important}}
-</style></head>
+</style>
+<style id="belek-print-source-style">
+@page { size: A4; margin: 14mm 13mm 16mm; }
+@media print {
+  body { background: #fff !important; color: #17211d !important; }
+  button, dialog, input, select, textarea, .compare-control, .compare-actions,
+  .sticky-compare, .compare-dock, #pdf-download { display: none !important; }
+  details { display: block !important; }
+  details > * { display: block !important; }
+  table { width: 100%; border-collapse: collapse; }
+  tr, .hotel-card { break-inside: avoid; }
+  img { max-width: 100%; }
+}
+</style>
+</head>
 <body>
 <div class="topbar"><div class="wrap topbar-inner"><div class="brand">BELEK / NY 26–27</div><nav class="nav"><a href="#ranking">Рейтинг</a><a href="#cards">Карточки</a><a href="#prices">Номера</a><a href="#extras">Доплаты</a><a href="#gastro">Гастро-критерии</a><a href="#shortlist">Shortlist</a></nav></div></div>
 <main class="wrap">
@@ -192,112 +206,6 @@ a{color:inherit;text-decoration:none} .wrap{width:min(1260px,calc(100% - 28px));
 </div>
 </div>
 </div>
-<script>
-(function(){
 
-  const foodData={"Spice Hotel & Spa": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "❌ Свежий отзыв: фисташковой пахлавы не было", "baklavaClass": "gastro-no"}, "Voyage Belek Golf & Spa": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "✅ Фисташковая пахлава подтверждена", "baklavaClass": "gastro-yes"}, "Susesi Luxury Resort": {"liver": "⚠️ Печень есть, ciğer şiş не подтверждён", "liverClass": "gastro-part", "baklava": "✅ Фисташковая пахлава подтверждена", "baklavaClass": "gastro-yes"}, "Rixos Park Belek": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "⚠️ Baklava есть, фисташковая не подтверждена", "baklavaClass": "gastro-part"}, "Bellis Deluxe Hotel": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "✅ Фисташковая пахлава подтверждена", "baklavaClass": "gastro-yes"}, "Papillon Zeugma Relaxury": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "✅ Фисташковая пахлава подтверждена", "baklavaClass": "gastro-yes"}, "Pine Beach Belek": {"liver": "⚠️ Печень на гриле есть, şiş не подтверждён", "liverClass": "gastro-part", "baklava": "⚠️ Baklava есть, фисташковая не подтверждена", "baklavaClass": "gastro-part"}, "Xanadu Resort": {"liver": "❓ Не подтверждено", "liverClass": "gastro-unknown", "baklava": "✅ Фисташковая пахлава подтверждена", "baklavaClass": "gastro-yes"}, "Limak Arcadia Sport Resort": {"liver": "⚠️ Печень есть, şiş не подтверждён", "liverClass": "gastro-part", "baklava": "⚠️ Baklava есть, фисташковая не подтверждена", "baklavaClass": "gastro-part"}, "Limak Atlantis Deluxe": {"liver": "⚠️ Печень встречается, в current menu şiş нет", "liverClass": "gastro-part", "baklava": "❌ Current menu: walnut baklava + pistachio kadaif", "baklavaClass": "gastro-no"}};
-  const cards=[...document.querySelectorAll('.hotel-card')];
-  const selected=[];
-  const dock=document.getElementById('compareDock');
-  const names=document.getElementById('compareNames');
-  const openBtn=document.getElementById('compareOpen');
-  const clearBtn=document.getElementById('compareClear');
-  const modal=document.getElementById('compareModal');
-  const closeBtn=document.getElementById('compareClose');
-  const grid=document.getElementById('compareGrid');
-
-  function info(card){
-    const title=card.querySelector('.photo-caption h3')?.textContent.trim() || '';
-    const verdict=card.querySelector('.verdict')?.textContent.trim() || '';
-    const score=card.querySelector('.score-badge')?.textContent.trim() || '';
-    const index=card.querySelector('.price-badge')?.textContent.trim() || '';
-    const img=card.querySelector('.hotel-photo img')?.getAttribute('src') || '';
-    const pos=card.querySelector('.hotel-photo img')?.style.objectPosition || 'center';
-    const lead=card.querySelector('.lead')?.textContent.trim() || '';
-    const why=(card.querySelector('.why')?.textContent || '').replace(/^Почему для вас:\s*/,'').trim();
-    const priceBoxes=[...card.querySelectorAll('.pbox')].map(p=>({
-      label:p.querySelector('.lab')?.textContent.trim()||'',
-      night:p.querySelector('.night')?.textContent.trim()||'',
-      total:p.querySelector('.total')?.textContent.trim()||''
-    }));
-    const detailSections=[...card.querySelectorAll('.detail-grid section')].map(s=>({
-      title:s.querySelector('h4')?.textContent.trim()||'',
-      items:[...s.querySelectorAll('.chip')].map(c=>c.textContent.trim())
-    }));
-    return {card,title,verdict,score,index,img,pos,lead,why,priceBoxes,detailSections};
-  }
-
-  function update(){
-    cards.forEach(c=>{
-      const btn=c.querySelector('.compare-toggle');
-      if(!btn) return;
-      const on=selected.includes(c);
-      btn.classList.toggle('selected',on);
-      btn.textContent=on?'✓ В сравнении':'＋ Сравнить';
-    });
-    dock.classList.toggle('show',selected.length>0);
-    names.innerHTML=selected.map((c,i)=>{
-      const x=info(c);
-      return `<span class="compare-name">${x.title}<button type="button" data-remove="${i}" aria-label="Убрать ${x.title}">×</button></span>`;
-    }).join('');
-    openBtn.textContent=selected.length>1?`Сравнить ${selected.length}`:'Выберите ещё 1';
-    openBtn.disabled=selected.length<2;
-    openBtn.style.opacity=selected.length<2?'.55':'1';
-    names.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{
-      selected.splice(Number(b.dataset.remove),1); update();
-    }));
-  }
-
-  cards.forEach(card=>{
-    const btn=card.querySelector('.compare-toggle');
-    if(!btn) return;
-    btn.addEventListener('click',()=>{
-      const idx=selected.indexOf(card);
-      if(idx>=0) selected.splice(idx,1);
-      else if(selected.length<4) selected.push(card);
-      else { alert('Можно сравнить до 4 отелей одновременно.'); return; }
-      update();
-    });
-  });
-
-  function pills(items,paid=false){return items.map(x=>`<span class="cmp-pill ${paid?'paid':''}">${x}</span>`).join('')}
-  function renderCompare(){
-    const rows=selected.map(info);
-    grid.style.setProperty('--cols',String(Math.max(1,rows.length)));
-    grid.innerHTML=rows.map(x=>{
-      const kids=x.detailSections.find(s=>s.title.includes('Дети'))?.items||[];
-      const sport=x.detailSections.find(s=>s.title.includes('Спорт'))?.items||[];
-      const winter=x.detailSections.find(s=>s.title.includes('зимой'))?.items||[];
-      const paid=x.detailSections.find(s=>s.title.includes('платно'))?.items||[];
-      return `<article class="cmp-card">
-        <div class="cmp-photo"><img src="${x.img}" style="object-position:${x.pos}" alt="${x.title}"><div class="cmp-photo-title"><span>${x.verdict}</span><b>${x.title}</b></div></div>
-        <div class="cmp-body">
-          <div class="cmp-score"><strong>${x.score}</strong><div class="cmp-price-index">${x.index}</div></div>
-          <div class="cmp-prices">${x.priceBoxes.map(p=>`<div class="cmp-price"><b>${p.label}: ${p.night}</b><span>${p.total}</span></div>`).join('')}</div>
-          <div class="cmp-section"><h4>Главный вывод</h4><p>${x.lead}</p></div>
-          <div class="cmp-section"><h4>Почему подходит вам</h4><p>${x.why}</p></div>
-          <div class="cmp-section"><h4>👧 Дети</h4><div class="cmp-list">${pills(kids)}</div></div>
-          <div class="cmp-section"><h4>🎾 Спорт</h4><div class="cmp-list">${pills(sport)}</div></div>
-          <div class="cmp-section"><h4>🏊 Зимой</h4><div class="cmp-list">${pills(winter)}</div></div>
-          <div class="cmp-section"><h4>💶 Платно / уточнить</h4><div class="cmp-list">${pills(paid,true)}</div></div>
-          <div class="cmp-section"><h4>🍽 Гастро-критерии</h4>
-            <div class="cmp-food">
-              <div class="cmp-food-item"><b>🍢 Печёночный шашлык / ciğer şiş</b><span class="gastro-status ${foodData[x.title]?.liverClass||'gastro-unknown'}">${foodData[x.title]?.liver||'❓ нет данных'}</span></div>
-              <div class="cmp-food-item"><b>🥮 Фисташковая пахлава</b><span class="gastro-status ${foodData[x.title]?.baklavaClass||'gastro-unknown'}">${foodData[x.title]?.baklava||'❓ нет данных'}</span></div>
-            </div>
-          </div>
-        </div>
-      </article>`;
-    }).join('');
-  }
-
-  openBtn.addEventListener('click',()=>{if(selected.length<2)return;renderCompare();modal.classList.add('show');document.body.style.overflow='hidden'});
-  closeBtn.addEventListener('click',()=>{modal.classList.remove('show');document.body.style.overflow=''});
-  modal.addEventListener('click',e=>{if(e.target===modal){modal.classList.remove('show');document.body.style.overflow=''}});
-  clearBtn.addEventListener('click',()=>{selected.splice(0);update()});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('show')){modal.classList.remove('show');document.body.style.overflow=''}});
-  update();
-})();
-</script>
 </body>
 </html>
