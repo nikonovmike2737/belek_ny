@@ -1,0 +1,25 @@
+{
+  "backup_type": "historical_public_price_snapshot",
+  "snapshot_date": "2026-09-04",
+  "created_for_live_refresh_at": "2026-09-10T13:14:00+03:00",
+  "date_window": {"check_in": "2026-12-25", "check_out": "2027-01-03", "nights": 9},
+  "currency": "EUR",
+  "status": "historical_orientir_not_confirmed_live_quote",
+  "rollback_production_sha": "a8298b9d6071d9fed84269a0b191899e656dea5f",
+  "source_report_version": "20260910T101400Z",
+  "source_html_sha256": "5feb5f38d088f5edeba3c928e446526bbd8fb23fd0dd643cf00cfb7352aa54fb",
+  "cards": {
+    "Spice Hotel & Spa": {"2_adults":{"per_night_eur":247,"total_9_nights_eur":2220},"2_adults_1_child_5":{"per_night_eur":280,"total_9_nights_eur":2520},"2_adults_2_children_5_7":{"per_night_eur":380,"total_9_nights_eur":3420}},
+    "Voyage Belek Golf & Spa": {"2_adults":{"per_night_eur":400,"total_9_nights_eur":3600},"2_adults_1_child_5":{"per_night_eur":450,"total_9_nights_eur":4050},"2_adults_2_children_5_7":{"per_night_eur":560,"total_9_nights_eur":5040}},
+    "Susesi Luxury Resort": {"2_adults":{"per_night_eur":470,"total_9_nights_eur":4230},"2_adults_1_child_5":{"per_night_eur":530,"total_9_nights_eur":4770},"2_adults_2_children_5_7":{"per_night_eur":650,"total_9_nights_eur":5850}},
+    "Rixos Park Belek": {"2_adults":{"per_night_eur":350,"total_9_nights_eur":3150},"2_adults_1_child_5":{"per_night_eur":395,"total_9_nights_eur":3555},"2_adults_2_children_5_7":{"per_night_eur":470,"total_9_nights_eur":4230}},
+    "Bellis Deluxe Hotel": {"2_adults":{"per_night_eur":312,"total_9_nights_eur":2808},"2_adults_1_child_5":{"per_night_eur":350,"total_9_nights_eur":3150},"2_adults_2_children_5_7":{"per_night_eur":450,"total_9_nights_eur":4050}},
+    "Papillon Zeugma Relaxury": {"2_adults":{"per_night_eur":342,"total_9_nights_eur":3078},"2_adults_1_child_5":{"per_night_eur":385,"total_9_nights_eur":3465},"2_adults_2_children_5_7":{"per_night_eur":460,"total_9_nights_eur":4140}},
+    "Pine Beach Belek": {"2_adults":{"per_night_eur":284,"total_9_nights_eur":2556},"2_adults_1_child_5":{"per_night_eur":295,"total_9_nights_eur":2655},"2_adults_2_children_5_7":{"per_night_eur":350,"total_9_nights_eur":3150}},
+    "Xanadu Resort": {"2_adults":{"per_night_eur":320,"total_9_nights_eur":2880},"2_adults_1_child_5":{"per_night_eur":360,"total_9_nights_eur":3240},"2_adults_2_children_5_7":{"per_night_eur":415,"total_9_nights_eur":3735}},
+    "Limak Arcadia Sport Resort": {"2_adults":{"per_night_eur":241,"total_9_nights_eur":2169},"2_adults_1_child_5":{"per_night_eur":265,"total_9_nights_eur":2385},"2_adults_2_children_5_7":{"per_night_eur":300,"total_9_nights_eur":2700}},
+    "Limak Atlantis Deluxe": {"2_adults":{"per_night_eur":220,"total_9_nights_eur":1980},"2_adults_1_child_5":{"per_night_eur":310,"total_9_nights_eur":2790},"2_adults_2_children_5_7":{"per_night_eur":350,"total_9_nights_eur":3150}}
+  },
+  "table_matches_cards": true,
+  "rollback_policy": "If a refresh would replace a material share of the public matrix with unavailable or unknown current prices, keep or restore this 2026-09-04 snapshot and label it as a historical price reference."
+}
