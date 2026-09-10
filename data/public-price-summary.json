@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "report_version": "20260910T110000Z",
+  "checked_at": "2026-09-10T14:00:00+03:00",
+  "stay": {
+    "check_in": "2026-12-25",
+    "check_out": "2027-01-03",
+    "nights": 9
+  },
+  "occupancies": ["2A", "2A1C5", "2A2C5_7"],
+  "coverage": {
+    "current_supplier_rate_hotels": 7,
+    "historical_reference_hotels": 3,
+    "total_hotels": 10
+  },
+  "rollback": {
+    "backup_file": "backups/prices_2026-09-04_before_live_refresh.json",
+    "production_sha_before_refresh": "a8298b9d6071d9fed84269a0b191899e656dea5f"
+  },
+  "method": "For current rows, totals are calculated from the supplier's date-banded accommodation prices for the exact nine nights. Supplier pages are self-transport offers with board. Early-booking prices shown by the supplier are stated as valid through 2026-09-10 or until withdrawn by the hotel. Recheck before payment.",
+  "hotels": [
+    {"hotel":"Spice Hotel & Spa","status":"HISTORICAL_REFERENCE_2026-09-04","source":"https://www.destine-holidays.ro/cazare/in-Belek/Turkey/spa-spice-k-belek-turcia/","current_check":"https://verso.bg/offer/spice-hotel-spa-sobstven-transport","reason":"Verso indicates no availability for part of 2026-12-27 through 2027-01-03 for relevant categories, so no continuous comparable 9-night price was substituted.","prices":{"2A":{"nightly_eur":247,"total_eur":2220},"2A1C5":{"nightly_eur":280,"total_eur":2520},"2A2C5_7":{"nightly_eur":380,"total_eur":3420}}},
+    {"hotel":"Voyage Belek Golf & Spa","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/voyage-belek-golf-spa","rooms":{"2A":"Standard Garden Block B","2A1C5":"Standard Garden Block B","2A2C5_7":"Standard Garden Block A"},"prices":{"2A":{"nightly_eur":300,"total_eur":2700},"2A1C5":{"nightly_eur":300,"total_eur":2700},"2A2C5_7":{"nightly_eur":376,"total_eur":3384}}},
+    {"hotel":"Susesi Luxury Resort","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/susesi-luxury-resort","rooms":{"2A":"Deluxe Garden","2A1C5":"Deluxe Garden","2A2C5_7":"Senior Suite Garden"},"prices":{"2A":{"nightly_eur":237,"total_eur":2133},"2A1C5":{"nightly_eur":237,"total_eur":2133},"2A2C5_7":{"nightly_eur":416,"total_eur":3744}}},
+    {"hotel":"Rixos Park Belek","status":"HISTORICAL_REFERENCE_2026-09-04","source":"https://www.alltur.ro/cazare/in-Belek/Turcia/park-rixos-k-belek-turcia/","reason":"No comparable accommodation-only 9-night price for all required occupancies was found. Flight-inclusive packages were excluded.","prices":{"2A":{"nightly_eur":350,"total_eur":3150},"2A1C5":{"nightly_eur":395,"total_eur":3555},"2A2C5_7":{"nightly_eur":470,"total_eur":4230}}},
+    {"hotel":"Bellis Deluxe Hotel","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/bellis-deluxe-hotel","rooms":{"2A":"Camelia Garden","2A1C5":"Camelia Garden","2A2C5_7":"Small Suite Side Sea"},"prices":{"2A":{"nightly_eur":234,"total_eur":2104},"2A1C5":{"nightly_eur":234,"total_eur":2104},"2A2C5_7":{"nightly_eur":393,"total_eur":3540}}},
+    {"hotel":"Papillon Zeugma Relaxury","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/papillon-zeugma-relaxury","rooms":{"2A":"Superior Garden","2A1C5":"Superior Garden","2A2C5_7":"Superior Garden"},"prices":{"2A":{"nightly_eur":231,"total_eur":2076},"2A1C5":{"nightly_eur":231,"total_eur":2076},"2A2C5_7":{"nightly_eur":289,"total_eur":2601}}},
+    {"hotel":"Pine Beach Belek","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/maritim-pine-beach-hotel-sobstven-transport","rooms":{"2A":"Main Building Standard Garden","2A1C5":"Main Building Standard Garden","2A2C5_7":"Main Building Standard Garden"},"prices":{"2A":{"nightly_eur":168,"total_eur":1512},"2A1C5":{"nightly_eur":168,"total_eur":1512},"2A2C5_7":{"nightly_eur":226,"total_eur":2034}}},
+    {"hotel":"Xanadu Resort","status":"HISTORICAL_REFERENCE_2026-09-04","source":"https://www.alltur.ro/cazare/in-Antalya/Turcia/class-high-xanadu-k-belek-turcia/","current_check":"https://verso.bg/offer/nova-godina-v-xanadu-resort-hotel","reason":"The current New Year supplier offer covers only four or five nights, not the required nine nights.","prices":{"2A":{"nightly_eur":320,"total_eur":2880},"2A1C5":{"nightly_eur":360,"total_eur":3240},"2A2C5_7":{"nightly_eur":415,"total_eur":3735}}},
+    {"hotel":"Limak Arcadia Sport Resort","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/limak-arcadia-golf-sport-resort-hotel-sobstven-transport","rooms":{"2A":"Economy Room","2A1C5":"Economy Room","2A2C5_7":"Economy Room"},"prices":{"2A":{"nightly_eur":111,"total_eur":1000},"2A1C5":{"nightly_eur":111,"total_eur":1000},"2A2C5_7":{"nightly_eur":111,"total_eur":1000}}},
+    {"hotel":"Limak Atlantis Deluxe","status":"SUPPLIER_RATE_CHECKED","source":"https://verso.bg/offer/limak-atlantis-de-luxe-hotel-resort-sobstven-transport","rooms":{"2A":"Economy Room","2A1C5":"Economy Room","2A2C5_7":"Economy Room"},"prices":{"2A":{"nightly_eur":119,"total_eur":1072},"2A1C5":{"nightly_eur":119,"total_eur":1072},"2A2C5_7":{"nightly_eur":119,"total_eur":1072}}}
+  ]
+}
