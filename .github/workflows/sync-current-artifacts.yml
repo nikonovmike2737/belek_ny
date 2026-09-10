@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/sync-current-artifacts.yml"
+      - ".github/belek-sync-trigger"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -47,7 +48,7 @@ jobs:
           mv belek_new_year_comparison_2026_2027_current.pdf.new \
              belek_new_year_comparison_2026_2027_current.pdf
 
-      - name: Bootstrap structured state and PDF source
+      - name: Maintain structured state and PDF source
         run: |
           set -euo pipefail
           python scripts/bootstrap_price_state.py
