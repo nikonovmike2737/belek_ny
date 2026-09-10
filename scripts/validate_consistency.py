@@ -34,10 +34,13 @@ assert html.count("Изменение с прошлого запроса:") == 1
 style_m = re.search(r'<style id=["\']price-trend-style["\']>(.*?)</style>', html, re.I | re.S)
 assert style_m, "price trend style block missing"
 trend_style = style_m.group(1)
+compact_style = re.sub(r"\s+", "", trend_style).lower()
 assert re.search(r'td\[data-price-trend\]\s*\{[^}]*white-space\s*:\s*nowrap', trend_style, re.I | re.S), "price and trend arrow must stay on one line"
-assert "border-radius:999px" not in trend_style and "border-radius:50%" not in trend_style, "trend arrows must not have circular styling"
-assert re.search(r'\.price-trend\s*\{[^}]*border\s*:\s*0', trend_style, re.I | re.S), "trend arrows must not have a border"
-assert re.search(r'\.price-trend\s*\{[^}]*background\s*:\s*none', trend_style, re.I | re.S), "trend arrows must not have a background"
+assert "border-radius:999px" not in compact_style and "border-radius:50%" not in compact_style, "trend arrows must not have circular styling"
+assert "background:rgba(" not in compact_style, "trend arrows must not have a colored background"
+assert "border:1px" not in compact_style and "border:0.35mm" not in compact_style, "trend arrows must not have an outline"
+assert "background:none" in compact_style, "trend arrows must use a transparent background"
+assert "border:0" in compact_style, "trend arrows must have no border"
 
 trend_cells = re.findall(
     r'<td\b([^>]*\bdata-prev-price-eur=["\'][^"\']+["\'][^>]*)>(.*?)</td>',
