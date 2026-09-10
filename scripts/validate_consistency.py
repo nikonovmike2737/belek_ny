@@ -27,6 +27,37 @@ family_pattern = r"2 взрослых\s*<br\s*/?>\s*с 1 ребёнком\s*<br\
 assert re.search(family_pattern, html, re.I), "hero family composition must be three separate lines"
 assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in html, "semicolon-separated family composition is forbidden"
 
+# Price trend arrows. Every public price cell stores the previous and current
+# comparable value plus the derived direction. The visual arrow must match the
+# numeric comparison exactly; unchanged values must stay visually quiet.
+assert html.count("Изменение с прошлого запроса:") == 1, "price trend legend must appear exactly once"
+trend_cells = re.findall(
+    r'<td\b([^>]*\bdata-prev-price-eur=["\'][^"\']+["\'][^>]*)>(.*?)</td>',
+    html,
+    re.I | re.S,
+)
+assert len(trend_cells) == 60, f"expected 60 price trend cells, found {len(trend_cells)}"
+counts = {"up": 0, "down": 0, "same": 0}
+for attrs, body in trend_cells:
+    prev_m = re.search(r'data-prev-price-eur=["\']([0-9]+)["\']', attrs, re.I)
+    curr_m = re.search(r'data-current-price-eur=["\']([0-9]+)["\']', attrs, re.I)
+    trend_m = re.search(r'data-price-trend=["\'](up|down|same)["\']', attrs, re.I)
+    assert prev_m and curr_m and trend_m, f"price trend metadata incomplete: {attrs[:160]}"
+    prev = int(prev_m.group(1))
+    curr = int(curr_m.group(1))
+    trend = trend_m.group(1).lower()
+    expected = "up" if curr > prev else "down" if curr < prev else "same"
+    assert trend == expected, f"trend {trend} does not match {prev} -> {curr}"
+    has_up = bool(re.search(r'class=["\'][^"\']*\bprice-trend\b[^"\']*\bup\b[^"\']*["\'][^>]*>\s*↑\s*</span>', body, re.I | re.S))
+    has_down = bool(re.search(r'class=["\'][^"\']*\bprice-trend\b[^"\']*\bdown\b[^"\']*["\'][^>]*>\s*↓\s*</span>', body, re.I | re.S))
+    if trend == "up":
+        assert has_up and not has_down, "up cell must contain exactly an up visual and no down visual"
+    elif trend == "down":
+        assert has_down and not has_up, "down cell must contain exactly a down visual and no up visual"
+    else:
+        assert not has_up and not has_down, "unchanged cell must not contain a trend arrow"
+    counts[trend] += 1
+
 warnings = []
 if registry.get("report_version") != version:
     warnings.append(f"registry version {registry.get('report_version')} trails canonical {version}")
@@ -38,5 +69,6 @@ print(json.dumps({
     "report_version": version,
     "rooms": len(registry.get("rooms", [])),
     "quotes": len(state.get("quotes", [])) if state else 0,
+    "price_trends": counts,
     "warnings": warnings
 }, ensure_ascii=False))
