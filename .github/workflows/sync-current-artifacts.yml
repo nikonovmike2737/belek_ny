@@ -49,6 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/bootstrap_price_state.py
+          python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
           python scripts/validate_consistency.py
 
@@ -111,7 +112,7 @@ jobs:
       - name: Commit only when changed
         run: |
           set -euo pipefail
-          FILES="index.html belek_new_year_comparison_2026_2027_current.pdf data/current-price-state.json report/BELEK_NY_REPORT_SOURCE.html"
+          FILES="index.html belek_new_year_comparison_2026_2027_current.pdf data/current-price-state.json data/price-update-state.json report/BELEK_NY_REPORT_SOURCE.html"
           if git diff --quiet -- $FILES && [ -z "$(git ls-files --others --exclude-standard $FILES)" ]; then
             echo "No artifact changes"
             exit 0
