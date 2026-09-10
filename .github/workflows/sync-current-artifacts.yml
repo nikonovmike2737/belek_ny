@@ -32,10 +32,10 @@ jobs:
           set -euo pipefail
           CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-$(date +%s)"
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
-            "https://drive.google.com/uc?export=download&id=${DRIVE_HTML_FILE_ID}&cachebust=${CACHE_BUST}" \
+            "https://drive.usercontent.google.com/download?id=${DRIVE_HTML_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
             -o index.html.new
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
-            "https://drive.google.com/uc?export=download&id=${DRIVE_PDF_FILE_ID}&cachebust=${CACHE_BUST}" \
+            "https://drive.usercontent.google.com/download?id=${DRIVE_PDF_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
             -o belek_new_year_comparison_2026_2027_current.pdf.new
 
           test -s index.html.new
