@@ -1,17 +1,18 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "verified_at": "2026-09-10",
-  "verification_rule": "Each URL must be the official page of the exact hotel shown in the card. Availability is checked every 3-hour monitoring run but does not block price monitoring.",
+  "verification_rule": "Each URL must be the official page of the exact hotel shown in the card. Prefer the Russian-language page whenever the official hotel site offers Russian. Availability and language are checked every 3-hour monitoring run but do not block price monitoring.",
+  "language_policy": "ru-first",
   "hotels": [
-    {"hotel":"Spice Hotel & Spa","url":"https://spice.com.tr/en","identity_verified":true},
-    {"hotel":"Voyage Belek Golf & Spa","url":"https://www.voyagehotel.com/en/voyage-belek-spa/","identity_verified":true},
-    {"hotel":"Susesi Luxury Resort","url":"https://www.susesihotel.com/en/","identity_verified":true},
-    {"hotel":"Rixos Park Belek","url":"https://www.rixos.com/hotel-resort/rixos-park-belek","identity_verified":true},
-    {"hotel":"Bellis Deluxe Hotel","url":"https://bellis.com.tr/tr","identity_verified":true},
-    {"hotel":"Papillon Zeugma Relaxury","url":"https://papillon.com.tr/en/papillon-zeugma/","identity_verified":true},
-    {"hotel":"Pine Beach Belek","url":"https://www.pinebeach.com.tr/en","identity_verified":true},
-    {"hotel":"Xanadu Resort","url":"https://www.xanaduhotels.com.tr/en/xanadu-resort/","identity_verified":true},
-    {"hotel":"Limak Arcadia Sport Resort","url":"https://www.limakhotels.com/arcadia","identity_verified":true},
-    {"hotel":"Limak Atlantis Deluxe","url":"https://www.limakhotels.com/atlantis","identity_verified":true}
+    {"hotel":"Spice Hotel & Spa","url":"https://spice.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Voyage Belek Golf & Spa","url":"https://www.voyagehotel.com/ru/voyage-belek-spa","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Susesi Luxury Resort","url":"https://www.susesihotel.com/ru/","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Rixos Park Belek","url":"https://www.rixos.com/ru/hotel-resort/rixos-park-belek","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Bellis Deluxe Hotel","url":"https://bellis.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Papillon Zeugma Relaxury","url":"https://papillon.com.tr/ru/papillon-zeugma-3/","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Pine Beach Belek","url":"https://www.pinebeach.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Xanadu Resort","url":"https://www.xanaduhotels.com.tr/ru/xanadu-resort","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Limak Arcadia Sport Resort","url":"https://www.limakhotels.com/ru/arcadia","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
+    {"hotel":"Limak Atlantis Deluxe","url":"https://www.limakhotels.com/ru/atlantis","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true}
   ]
 }
