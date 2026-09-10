@@ -16,6 +16,16 @@ assert './belek_new_year_comparison_2026_2027_current.pdf' in html, "current PDF
 assert re.search(r'<a[^>]+download', html, re.I), "download attribute missing"
 assert "HISTORICAL_SNAPSHOT" in html, "historical price labeling missing"
 
+# Public-copy source of truth: no typographic long dashes anywhere in the
+# published HTML. Use ordinary punctuation or an ASCII hyphen for ranges.
+assert "—" not in html, "public HTML contains forbidden em dash"
+assert "–" not in html, "public HTML contains forbidden en dash"
+
+# Hero family composition must stay readable and must not regress to a
+# semicolon-separated machine-like line.
+assert "2 взрослых<br>с 1 ребёнком<br>с 2 детьми" in html, "hero family composition must be three separate lines"
+assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in html, "semicolon-separated family composition is forbidden"
+
 warnings = []
 if registry.get("report_version") != version:
     warnings.append(f"registry version {registry.get('report_version')} trails canonical {version}")
