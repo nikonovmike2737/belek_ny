@@ -23,8 +23,26 @@ a{color:inherit;text-decoration:none} .wrap{width:min(1260px,calc(100% - 28px));
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:20px;margin-top:15px} table{width:100%;border-collapse:collapse;min-width:980px;background:#0a1714} th,td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top} th{background:#11241f;color:#dce6e1;position:static} td{color:#cbd7d1} tr:last-child td{border-bottom:0} .hi{color:var(--lime);font-weight:850}
 .service-table{min-width:1120px}.service-table th:nth-child(1){width:15%}.service-table th:nth-child(2){width:38%}.service-table th:nth-child(3){width:32%}.service-table th:nth-child(4){width:15%}.service-table td{padding:15px 14px}.service-table .hotel-name{font-weight:850;color:#f4f7f4;white-space:nowrap}.service-list{display:flex;flex-wrap:wrap;gap:7px}.svc{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:10px;font-size:12px;line-height:1.25;border:1px solid transparent}.svc.free{background:#102d23;border-color:#245b46;color:#c9ffe7}.svc.free:before{content:'✓';font-weight:900;color:#83e8b4}.svc.paid{background:#351817;border-color:#7f322e;color:#ffd0cb}.svc.paid:before{content:'₽';font-weight:900;color:#ff8f80}.svc.check{background:#332b16;border-color:#6f5b24;color:#ffe7a3}.svc.check:before{content:'?';font-weight:900;color:#ffd26f}.paid-cell{background:linear-gradient(90deg,rgba(118,35,31,.16),rgba(118,35,31,.05))}.free-cell{background:linear-gradient(90deg,rgba(28,95,68,.11),rgba(28,95,68,.02))}.check-cell{background:linear-gradient(90deg,rgba(114,92,34,.10),rgba(114,92,34,.02))}.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.legend .svc{font-size:11px}.balance-note{margin-top:12px;color:#aebbb5;font-size:13px;line-height:1.55}
 .shortlist{display:grid;grid-template-columns:repeat(3,1fr);gap:12px} .short{border:1px solid var(--line);border-radius:20px;background:#0d1d19;padding:18px} .short .num{color:var(--lime);font-size:12px;font-weight:900} .short h3{font-size:22px;margin:7px 0} .short p{color:var(--muted);line-height:1.5} .note{border:1px solid #3b5f52;background:#0f1e1a;border-radius:18px;padding:16px 18px;color:#cfdbd5;line-height:1.55} .footer{padding:54px 0 72px;color:var(--muted);font-size:13px;line-height:1.55}
+
+/* --- mobile section navigation --- */
+html{scroll-padding-top:78px}
+.section[id]{scroll-margin-top:78px}
+.mobile-menu-toggle,.mobile-menu-panel{display:none}
+.mobile-menu-toggle{width:44px;height:44px;flex:0 0 44px;align-items:center;justify-content:center;border:1px solid #355c4e;border-radius:13px;background:#10241e;color:var(--text);cursor:pointer;padding:0}
+.mobile-menu-icon{position:relative;width:20px;height:14px;display:block}
+.mobile-menu-icon::before,.mobile-menu-icon::after,.mobile-menu-icon span{content:'';position:absolute;left:0;width:20px;height:2px;border-radius:2px;background:currentColor;transition:transform .18s ease,top .18s ease,opacity .18s ease}
+.mobile-menu-icon::before{top:0}.mobile-menu-icon span{top:6px}.mobile-menu-icon::after{top:12px}
+.mobile-menu-toggle[aria-expanded="true"] .mobile-menu-icon::before{top:6px;transform:rotate(45deg)}
+.mobile-menu-toggle[aria-expanded="true"] .mobile-menu-icon span{opacity:0}
+.mobile-menu-toggle[aria-expanded="true"] .mobile-menu-icon::after{top:6px;transform:rotate(-45deg)}
+.mobile-menu-panel{position:absolute;top:64px;right:9px;width:min(320px,calc(100vw - 18px));padding:8px;border:1px solid #355c4e;border-radius:18px;background:rgba(8,20,17,.98);backdrop-filter:blur(18px);box-shadow:0 24px 70px rgba(0,0,0,.48);z-index:70}
+.mobile-menu-panel.is-open{display:grid;gap:4px}
+.mobile-menu-panel a{display:flex;align-items:center;min-height:44px;padding:10px 12px;border-radius:12px;color:var(--text);font-size:15px;font-weight:800}
+.mobile-menu-panel a:hover,.mobile-menu-panel a:focus-visible{background:#153027;outline:none}
+@media print{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}
+
 @media(max-width:980px){.hotels{grid-template-columns:1fr} .ranking-strip{grid-template-columns:repeat(2,1fr)} .shortlist{grid-template-columns:1fr 1fr} .pricing-cards{grid-template-columns:1fr} }
-@media(max-width:680px){.wrap{width:min(100% - 18px,1260px)} .nav{display:none} .hero{min-height:700px;background-position:67% center} .hero-content{padding:24px} .hero-stats{grid-template-columns:1fr 1fr} .section-head{display:block} .detail-grid,.proscons,.shortlist{grid-template-columns:1fr} .hotel-photo{height:285px} .photo-caption h3{font-size:27px} }
+@media(max-width:680px){html{scroll-padding-top:76px}.section[id]{scroll-margin-top:76px}.wrap{width:min(100% - 18px,1260px)} .topbar-inner{height:64px;position:relative}.brand{font-size:14px;line-height:1.15;max-width:calc(100% - 58px)} .nav{display:none} .mobile-menu-toggle{display:inline-flex;margin-left:auto} .hero{min-height:700px;background-position:67% center} .hero-content{padding:24px} .hero-stats{grid-template-columns:1fr 1fr} .section-head{display:block} .detail-grid,.proscons,.shortlist{grid-template-columns:1fr} .hotel-photo{height:285px} .photo-caption h3{font-size:27px} }
 
 /* --- interactive hotel comparison --- */
 .compare-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,229,201,.13)}
@@ -95,7 +113,7 @@ td[data-price-trend]{white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="wrap topbar-inner"><div class="brand">БЕЛЕК · НОВЫЙ ГОД 2026/27</div><nav class="nav"><a href="#ranking">Рейтинг</a><a href="#cards">Карточки</a><a href="#prices">Номера</a><a href="#extras">Доплаты</a><a href="#gastro">Еда</a><a href="#shortlist">Выбор</a></nav></div></div>
+<div class="topbar"><div class="wrap topbar-inner"><div class="brand">БЕЛЕК · НОВЫЙ ГОД 2026/27</div><nav class="nav"><a href="#ranking">Рейтинг</a><a href="#cards">Карточки</a><a href="#prices">Номера</a><a href="#extras">Доплаты</a><a href="#gastro">Еда</a><a href="#shortlist">Выбор</a></nav><button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Открыть меню"><span class="mobile-menu-icon" aria-hidden="true"><span></span></span></button></div><nav class="mobile-menu-panel" id="mobileMenu" aria-label="Навигация по разделам"><a href="#ranking">Рейтинг</a><a href="#cards">Карточки</a><a href="#prices">Номера</a><a href="#extras">Доплаты</a><a href="#gastro">Еда</a><a href="#shortlist">Выбор</a></nav></div>
 <main class="wrap">
 <section class="hero"><div class="hero-content"><div class="eyebrow">Большая компания · семьи · дети 3-10 · Белек</div><h1>Отель на замену Bellis на Новый год 2026-2027</h1><p>Это сравнение отелей для вашей поездки: взрослые проводят время своей компанией, играют в теннис, волейбол, баскетбол и настольный теннис; дети дружат, ходят в детский клуб, бассейны и на вечерние занятия.</p><div class="hero-stats"><div class="stat"><b>25.12 → 03.01</b><span>9 ночей</span></div><div class="stat"><b>2 взрослых<br/>с 1 ребёнком<br/>с 2 детьми</b><span>три состава семьи</span></div><div class="stat"><b>Bellis: 100</b><span>точка отсчёта по цене</span></div><div class="stat"><b>10 отелей</b><span>единая логика сравнения</span></div></div></div></section>
 <section class="section" id="ranking"><div class="section-head"><div><div class="eyebrow">Итог</div><h2>Мой рейтинг сейчас</h2></div><div class="sub">Рейтинг показывает, насколько каждый отель подходит именно для вашей новогодней поездки: большой компании, детям, спорту и совместному отдыху.</div></div><div class="callout"><div class="callout-icon">🎯</div><div><strong>Коротко:</strong><p><b>Spice</b>: лучший по подтверждённой новогодней программе. <b>Voyage</b>: лучший в целом. <b>Susesi</b>: лучший для спорта взрослых. <b>Rixos Park</b>: самый сильный вариант для детей. <b>Bellis</b> остаётся проверенным ориентиром.</p></div></div><div class="ranking-strip"><div class="rank-mini"><span class="n">#1 · 9.4</span><b>Spice</b><small>Живой Новый год</small></div><div class="rank-mini"><span class="n">#2 · 9.2</span><b>Voyage</b><small>Лучший в целом</small></div><div class="rank-mini"><span class="n">#3 · 9.0</span><b>Susesi</b><small>Спорт взрослых</small></div><div class="rank-mini"><span class="n">#4 · 8.7</span><b>Rixos Park</b><small>Лучший для детей</small></div><div class="rank-mini"><span class="n">#5 · 8.6</span><b>Bellis</b><small>Проверенный ориентир</small></div></div></section>
@@ -229,6 +247,9 @@ td[data-price-trend]{white-space:nowrap}
 </div>
 </div>
 </div>
+
+
+
 
 </body>
 </html>
