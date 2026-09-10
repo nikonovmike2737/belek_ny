@@ -15,11 +15,11 @@ assert 'aria-label="Открыть меню"' in html, "mobile burger accessible
 
 expected = [
     ("#ranking", "Рейтинг"),
-    ("#cards", "Карточки"),
-    ("#prices", "Номера"),
-    ("#extras", "Доплаты"),
+    ("#cards", "Отели"),
+    ("#prices", "Стоимость"),
+    ("#extras", "Услуги"),
     ("#gastro", "Еда"),
-    ("#shortlist", "Выбор"),
+    ("#shortlist", "Рекомендация"),
 ]
 menu_m = re.search(r'<nav class="mobile-menu-panel" id="mobileMenu"[^>]*>(.*?)</nav>', html, re.I | re.S)
 assert menu_m, "mobile navigation markup missing"
@@ -27,6 +27,13 @@ menu = menu_m.group(1)
 for href, label in expected:
     assert f'href="{href}"' in menu and f'>{label}</a>' in menu, f"mobile navigation item missing: {label}"
     assert re.search(rf'<section\b[^>]*id=["\']{re.escape(href[1:])}["\']', html, re.I), f"mobile navigation target missing: {href}"
+
+# Desktop and mobile navigation must use the same labels for the same anchors.
+desktop_m = re.search(r'<nav class="nav"[^>]*>(.*?)</nav>', html, re.I | re.S)
+assert desktop_m, "desktop navigation markup missing"
+desktop = desktop_m.group(1)
+for href, label in expected:
+    assert f'href="{href}"' in desktop and f'>{label}</a>' in desktop, f"desktop navigation item missing: {label}"
 
 compact = re.sub(r"\s+", "", html)
 assert 'html{scroll-padding-top:76px}' in compact, "mobile scroll-padding-top must protect section start from sticky header"
@@ -39,4 +46,4 @@ assert "if(event.target.closest('a'))closeMenu()" in compact, "mobile menu must 
 assert "if(event.key==='Escape')closeMenu()" in compact, "mobile menu must close on Escape"
 assert "window.matchMedia('(min-width:681px)')" in html, "mobile menu must reset when returning to desktop width"
 
-print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76}')
+print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current"}')
