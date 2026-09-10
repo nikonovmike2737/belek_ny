@@ -1,18 +1,20 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "verified_at": "2026-09-10",
-  "verification_rule": "Each URL must be the official page of the exact hotel shown in the card. Prefer the Russian-language page whenever the official hotel site offers Russian. Availability and language are checked every 3-hour monitoring run but do not block price monitoring.",
-  "language_policy": "ru-first",
+  "verification_rule": "Each URL must be the official page of the exact hotel shown in the card. Choose the first working official language version in strict order: ru, en, de, tr. Availability and language are checked every 3-hour monitoring run and do not block price monitoring.",
+  "language_policy": "ru-en-de-tr-fallback",
+  "language_priority": ["ru", "en", "de", "tr"],
+  "fallback_rule": "Try Russian first. If Russian is unavailable, try English. If English is unavailable, try German. If German is unavailable, try Turkish. Publish the first working official page for the same hotel. If none works, retain the last verified canonical URL and report the failure; do not stop price monitoring.",
   "hotels": [
-    {"hotel":"Spice Hotel & Spa","url":"https://spice.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Voyage Belek Golf & Spa","url":"https://www.voyagehotel.com/ru/voyage-belek-spa","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Susesi Luxury Resort","url":"https://www.susesihotel.com/ru/","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Rixos Park Belek","url":"https://www.rixos.com/ru/hotel-resort/rixos-park-belek","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Bellis Deluxe Hotel","url":"https://bellis.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Papillon Zeugma Relaxury","url":"https://papillon.com.tr/ru/papillon-zeugma-3/","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Pine Beach Belek","url":"https://www.pinebeach.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Xanadu Resort","url":"https://www.xanaduhotels.com.tr/ru/xanadu-resort","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Limak Arcadia Sport Resort","url":"https://www.limakhotels.com/ru/arcadia","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true},
-    {"hotel":"Limak Atlantis Deluxe","url":"https://www.limakhotels.com/ru/atlantis","identity_verified":true,"russian_available":true,"preferred_language":"ru","language_verified":true}
+    {"hotel":"Spice Hotel & Spa","url":"https://spice.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Voyage Belek Golf & Spa","url":"https://www.voyagehotel.com/ru/voyage-belek-spa","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Susesi Luxury Resort","url":"https://www.susesihotel.com/ru/","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Rixos Park Belek","url":"https://www.rixos.com/ru/hotel-resort/rixos-park-belek","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Bellis Deluxe Hotel","url":"https://bellis.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Papillon Zeugma Relaxury","url":"https://papillon.com.tr/ru/papillon-zeugma-3/","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Pine Beach Belek","url":"https://www.pinebeach.com.tr/ru","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Xanadu Resort","url":"https://www.xanaduhotels.com.tr/ru/xanadu-resort","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Limak Arcadia Sport Resort","url":"https://www.limakhotels.com/ru/arcadia","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true},
+    {"hotel":"Limak Atlantis Deluxe","url":"https://www.limakhotels.com/ru/atlantis","identity_verified":true,"russian_available":true,"preferred_language":"ru","selected_language":"ru","language_verified":true}
   ]
 }

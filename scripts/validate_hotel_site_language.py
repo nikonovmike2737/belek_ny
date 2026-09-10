@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from pathlib import Path
-from urllib.parse import urlparse
 import html as html_lib
 import json
 import re
@@ -9,22 +8,25 @@ ROOT = Path(__file__).resolve().parents[1]
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 data = json.loads((ROOT / "data" / "hotel-site-links.json").read_text(encoding="utf-8"))
 
-assert data.get("language_policy") == "ru-first", "hotel site language policy must be ru-first"
+EXPECTED_PRIORITY = ["ru", "en", "de", "tr"]
+assert data.get("language_policy") == "ru-en-de-tr-fallback", "hotel site language policy must be ru-en-de-tr-fallback"
+assert data.get("language_priority") == EXPECTED_PRIORITY, "hotel site language priority must be ru -> en -> de -> tr"
 rows = data.get("hotels", [])
 assert len(rows) == 10, f"expected 10 hotel links, found {len(rows)}"
 assert len({r.get("hotel") for r in rows}) == 10, "duplicate hotel names in site map"
 
 site_map = {}
+selected_counts = {lang: 0 for lang in EXPECTED_PRIORITY}
 for row in rows:
     hotel = row.get("hotel")
     url = row.get("url")
+    selected = row.get("selected_language")
     assert hotel and url, "hotel site row missing hotel/url"
     assert row.get("identity_verified") is True, f"{hotel}: hotel identity not verified"
-    if row.get("russian_available") is True:
-        assert row.get("preferred_language") == "ru", f"{hotel}: Russian must be preferred"
-        assert row.get("language_verified") is True, f"{hotel}: Russian language route not verified"
-        path_parts = [p.lower() for p in urlparse(url).path.split("/") if p]
-        assert "ru" in path_parts, f"{hotel}: Russian is available but URL is not a /ru route"
+    assert row.get("preferred_language") == "ru", f"{hotel}: absolute language preference must start with ru"
+    assert selected in EXPECTED_PRIORITY, f"{hotel}: selected_language must be one of {EXPECTED_PRIORITY}"
+    assert row.get("language_verified") is True, f"{hotel}: selected language route not verified"
+    selected_counts[selected] += 1
     site_map[hotel] = url
 
 cards = re.findall(
@@ -44,6 +46,11 @@ for card in cards:
     assert len(anchors) == 2, f"{name}: expected two Сайт отеля links"
     for attrs in anchors:
         href_m = re.search(r'href=["\']([^"\']+)["\']', attrs, re.I)
-        assert href_m and href_m.group(1) == expected, f"{name}: card URL differs from canonical Russian-first URL"
+        assert href_m and href_m.group(1) == expected, f"{name}: card URL differs from canonical selected-language URL"
 
-print(json.dumps({"status":"PASS","hotels":len(rows),"russian_first":sum(1 for r in rows if r.get("russian_available"))}, ensure_ascii=False))
+print(json.dumps({
+    "status": "PASS",
+    "hotels": len(rows),
+    "language_priority": EXPECTED_PRIORITY,
+    "selected_languages": selected_counts,
+}, ensure_ascii=False))
