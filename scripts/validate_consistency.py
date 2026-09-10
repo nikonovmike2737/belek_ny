@@ -31,6 +31,14 @@ assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in htm
 # comparable value plus the derived direction. The visual arrow must match the
 # numeric comparison exactly; unchanged values must stay visually quiet.
 assert html.count("Изменение с прошлого запроса:") == 1, "price trend legend must appear exactly once"
+style_m = re.search(r'<style id=["\']price-trend-style["\']>(.*?)</style>', html, re.I | re.S)
+assert style_m, "price trend style block missing"
+trend_style = style_m.group(1)
+assert re.search(r'td\[data-price-trend\]\s*\{[^}]*white-space\s*:\s*nowrap', trend_style, re.I | re.S), "price and trend arrow must stay on one line"
+assert "border-radius:999px" not in trend_style and "border-radius:50%" not in trend_style, "trend arrows must not have circular styling"
+assert re.search(r'\.price-trend\s*\{[^}]*border\s*:\s*0', trend_style, re.I | re.S), "trend arrows must not have a border"
+assert re.search(r'\.price-trend\s*\{[^}]*background\s*:\s*none', trend_style, re.I | re.S), "trend arrows must not have a background"
+
 trend_cells = re.findall(
     r'<td\b([^>]*\bdata-prev-price-eur=["\'][^"\']+["\'][^>]*)>(.*?)</td>',
     html,
@@ -52,8 +60,10 @@ for attrs, body in trend_cells:
     has_down = bool(re.search(r'class=["\'][^"\']*\bprice-trend\b[^"\']*\bdown\b[^"\']*["\'][^>]*>\s*↓\s*</span>', body, re.I | re.S))
     if trend == "up":
         assert has_up and not has_down, "up cell must contain exactly an up visual and no down visual"
+        assert not re.search(r'<br\s*/?>\s*<span[^>]*\bprice-trend\b', body, re.I | re.S), "up arrow must never be placed below the price"
     elif trend == "down":
         assert has_down and not has_up, "down cell must contain exactly a down visual and no up visual"
+        assert not re.search(r'<br\s*/?>\s*<span[^>]*\bprice-trend\b', body, re.I | re.S), "down arrow must never be placed below the price"
     else:
         assert not has_up and not has_down, "unchanged cell must not contain a trend arrow"
     counts[trend] += 1
