@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import base64
+import hashlib
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +37,13 @@ desktop = desktop_m.group(1)
 for href, label in expected:
     assert f'href="{href}"' in desktop and f'>{label}</a>' in desktop, f"desktop navigation item missing: {label}"
 
+# Favicon must be the approved family New Year beach image, embedded so Pages has no binary-file dependency.
+favicon_m = re.search(r'<link\s+rel="icon"\s+type="image/png"\s+sizes="64x64"\s+href="data:image/png;base64,([A-Za-z0-9+/=]+)"\s*/?>', html, re.I)
+assert favicon_m, "approved embedded favicon missing"
+favicon_bytes = base64.b64decode(favicon_m.group(1), validate=True)
+assert favicon_bytes.startswith(b'\x89PNG\r\n\x1a\n'), "favicon must be PNG"
+assert hashlib.sha256(favicon_bytes).hexdigest() == "c5021df59ae2bea0ff4808dd20cdd028b7aab51a8168f5befcf64c0ba3e74b54", "favicon does not match approved artwork"
+
 compact = re.sub(r"\s+", "", html)
 assert 'html{scroll-padding-top:76px}' in compact, "mobile scroll-padding-top must protect section start from sticky header"
 assert '.section[id]{scroll-margin-top:76px}' in compact, "mobile section scroll-margin-top missing"
@@ -46,4 +55,4 @@ assert "if(event.target.closest('a'))closeMenu()" in compact, "mobile menu must 
 assert "if(event.key==='Escape')closeMenu()" in compact, "mobile menu must close on Escape"
 assert "window.matchMedia('(min-width:681px)')" in html, "mobile menu must reset when returning to desktop width"
 
-print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current"}')
+print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current","favicon":"approved"}')
