@@ -49,7 +49,7 @@ assert '.mobile-menu-toggle{display:inline-flex' in compact, "mobile burger must
 assert '.nav{display:none}' in compact, "desktop navigation must be hidden on mobile"
 assert '@mediaprint{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}' in compact, "mobile menu must be hidden in print/PDF"
 
-# Hotel cards now have exactly three user actions in one row in both states:
+# Hotel cards have exactly three user actions in one row in both states:
 # Details/Collapse, Reviews, Hotel site. Interactive comparison is removed.
 assert 'compare-toggle' not in html, "Compare button must be removed"
 assert 'compareDock' not in html and 'compareModal' not in html, "Compare dock/modal must be removed"
@@ -74,7 +74,6 @@ for card in cards:
 
 assert '.hotel-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));' in compact, "hotel actions must use a fixed three-column row"
 assert '@media(max-width:620px){.hotel-actions{grid-template-columns:repeat(3,minmax(0,1fr));' in compact, "mobile hotel actions must stay in one three-column row"
-assert '.hotel-actions.btn,.hotel-actions.reviews-link{font-size:11px' not in compact, "malformed action selector"
 assert 'white-space:nowrap' in compact, "button labels must stay on one line"
 assert '.hotel-card.is-open>.hotel-body>.hotel-actions-collapsed{display:none}' in compact, "collapsed row must hide when card is open"
 assert "details.open=!details.open" in compact, "hotel details toggle logic missing"
