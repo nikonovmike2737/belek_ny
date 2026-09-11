@@ -30,14 +30,12 @@ for href, label in expected:
     assert f'href="{href}"' in menu and f'>{label}</a>' in menu, f"mobile navigation item missing: {label}"
     assert re.search(rf'<section\b[^>]*id=["\']{re.escape(href[1:])}["\']', html, re.I), f"mobile navigation target missing: {href}"
 
-# Desktop and mobile navigation must use the same labels for the same anchors.
 desktop_m = re.search(r'<nav class="nav"[^>]*>(.*?)</nav>', html, re.I | re.S)
 assert desktop_m, "desktop navigation markup missing"
 desktop = desktop_m.group(1)
 for href, label in expected:
     assert f'href="{href}"' in desktop and f'>{label}</a>' in desktop, f"desktop navigation item missing: {label}"
 
-# Favicon must be the approved family New Year beach image, embedded so Pages has no binary-file dependency.
 favicon_m = re.search(r'<link\s+rel="icon"\s+type="image/png"\s+sizes="64x64"\s+href="data:image/png;base64,([A-Za-z0-9+/=]+)"\s*/?>', html, re.I)
 assert favicon_m, "approved embedded favicon missing"
 favicon_bytes = base64.b64decode(favicon_m.group(1), validate=True)
@@ -51,20 +49,38 @@ assert '.mobile-menu-toggle{display:inline-flex' in compact, "mobile burger must
 assert '.nav{display:none}' in compact, "desktop navigation must be hidden on mobile"
 assert '@mediaprint{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}' in compact, "mobile menu must be hidden in print/PDF"
 
-# Reviews and Compare are a fixed two-button row inside every hotel card.
-# Reviews must be first, Compare second, and both stay left-aligned and horizontal on mobile.
-review_compare_pairs = re.findall(
-    r'<div class="compare-actions">\s*<a class="reviews-link"[^>]*>.*?<span>Отзывы</span></a>\s*<button class="compare-toggle"[^>]*>＋ Сравнить</button>\s*</div>',
-    html,
-    re.I | re.S,
-)
-assert len(review_compare_pairs) == 10, f"expected 10 Reviews+Compare action pairs, found {len(review_compare_pairs)}"
-assert '.compare-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "Reviews and Compare must be horizontal and left-aligned"
-assert '@media(max-width:620px){.compare-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "mobile compare row must remain horizontal and left-aligned"
-assert '.compare-actions{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;width:100%;flex-wrap:nowrap}' in compact, "mobile Reviews and Compare must never stack"
+# Hotel cards now have exactly three user actions in one row in both states:
+# Details/Collapse, Reviews, Hotel site. Interactive comparison is removed.
+assert 'compare-toggle' not in html, "Compare button must be removed"
+assert 'compareDock' not in html and 'compareModal' not in html, "Compare dock/modal must be removed"
+assert '＋ Сравнить' not in html and '✓ В сравнении' not in html, "Compare copy must be removed"
+assert '.compare-row' not in html and '.compare-dock' not in html and '.compare-modal' not in html, "Compare CSS must be removed"
+
+cards = re.findall(r'<article\b[^>]*class=["\'][^"\']*\bhotel-card\b[^"\']*["\'][^>]*>.*?</article>', html, re.I | re.S)
+assert len(cards) == 10, f"expected 10 hotel cards, found {len(cards)}"
+for card in cards:
+    collapsed = re.search(r'<div class="hotel-actions hotel-actions-collapsed">(.*?)</div>', card, re.I | re.S)
+    expanded = re.search(r'<div class="hotel-actions hotel-actions-expanded">(.*?)</div>', card, re.I | re.S)
+    assert collapsed and expanded, "hotel action rows missing"
+    c = collapsed.group(1)
+    e = expanded.group(1)
+    assert re.search(r'>Подробнее</button>.*class="reviews-link".*>Отзывы</span></a>.*>Сайт отеля</a>', c, re.I | re.S), "collapsed actions must be Подробнее, Отзывы, Сайт отеля"
+    assert re.search(r'>Свернуть</button>.*class="reviews-link".*>Отзывы</span></a>.*>Сайт отеля</a>', e, re.I | re.S), "expanded actions must be Свернуть, Отзывы, Сайт отеля"
+    for row in (c, e):
+        assert row.count('class="reviews-link"') == 1, "each action row must have one Reviews link"
+        assert row.count('class="btn primary hotel-site-link"') == 1, "each action row must have one Hotel site link"
+        assert 'tripadvisor.ru/' in row, "Reviews must open Russian Tripadvisor"
+        assert 'target="_blank"' in row, "external card actions must open in new tab"
+
+assert '.hotel-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));' in compact, "hotel actions must use a fixed three-column row"
+assert '@media(max-width:620px){.hotel-actions{grid-template-columns:repeat(3,minmax(0,1fr));' in compact, "mobile hotel actions must stay in one three-column row"
+assert '.hotel-actions.btn,.hotel-actions.reviews-link{font-size:11px' not in compact, "malformed action selector"
+assert 'white-space:nowrap' in compact, "button labels must stay on one line"
+assert '.hotel-card.is-open>.hotel-body>.hotel-actions-collapsed{display:none}' in compact, "collapsed row must hide when card is open"
+assert "details.open=!details.open" in compact, "hotel details toggle logic missing"
 
 assert "if(event.target.closest('a'))closeMenu()" in compact, "mobile menu must close after section selection"
 assert "if(event.key==='Escape')closeMenu()" in compact, "mobile menu must close on Escape"
 assert "window.matchMedia('(min-width:681px)')" in html, "mobile menu must reset when returning to desktop width"
 
-print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current","favicon":"approved","review_compare_row":"horizontal-left"}')
+print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current","favicon":"approved","hotel_actions":"three-horizontal","compare":"removed","mobile_390":"required"}')
