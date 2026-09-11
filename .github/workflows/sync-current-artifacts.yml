@@ -2,15 +2,21 @@ name: Sync current Belek NY HTML and PDF from Google Drive
 
 on:
   push:
-    branches: [main]
+    branches: [release/editorial-canon-20260911]
     paths:
       - ".github/workflows/sync-current-artifacts.yml"
       - "data/hotel-site-links.json"
       - "docs/HOTEL_SITE_LANGUAGE_PRIORITY_RULE.md"
+      - "docs/TEXT_STYLE_SOURCE_OF_TRUTH.md"
+      - "docs/PUBLIC_COPY_QA_CHECKLIST.md"
+      - "docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md"
+      - "docs/HOTEL_CARD_ACTIONS_AND_SITE_LINK_QA.md"
+      - "docs/DELTA_ONLY_PRODUCTION_POLICY.md"
+      - "scripts/build_pdf_source.py"
+      - "scripts/validate_consistency.py"
+      - "scripts/validate_public_copy.py"
       - "scripts/validate_hotel_site_language.py"
       - "scripts/validate_mobile_navigation.py"
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -48,7 +54,7 @@ jobs:
           test "$(head -c 5 drive-current.pdf)" = "%PDF-"
           mv index.html.new index.html
 
-      - name: Maintain structured state and validate official hotel links
+      - name: Maintain structured state and validate release gates
         run: |
           set -euo pipefail
           test -s data/hotel-site-links.json
@@ -57,6 +63,7 @@ jobs:
           python scripts/build_pdf_source.py
           python scripts/validate_hotel_site_language.py
           python scripts/validate_mobile_navigation.py
+          python scripts/validate_public_copy.py
           python scripts/validate_consistency.py
 
       - name: Select or regenerate matching PDF
@@ -79,10 +86,8 @@ jobs:
             PDF_PATH="$pdf" REPORT_VERSION="$VERSION" python - <<'PY'
           from os import environ
           from pypdf import PdfReader
-          path = environ['PDF_PATH']
-          version = environ['REPORT_VERSION']
-          text = '\n'.join((p.extract_text() or '') for p in PdfReader(path).pages)
-          raise SystemExit(0 if version in text else 1)
+          text = '\n'.join((p.extract_text() or '') for p in PdfReader(environ['PDF_PATH']).pages)
+          raise SystemExit(0 if environ['REPORT_VERSION'] in text else 1)
           PY
           }
 
@@ -104,15 +109,11 @@ jobs:
               "file://$(pwd)/report/BELEK_NY_REPORT_SOURCE.html"
             test -s belek_new_year_comparison_2026_2027_current.pdf.new
             test "$(head -c 5 belek_new_year_comparison_2026_2027_current.pdf.new)" = "%PDF-"
-            mv belek_new_year_comparison_2026_2027_current.pdf.new \
-               belek_new_year_comparison_2026_2027_current.pdf
+            mv belek_new_year_comparison_2026_2027_current.pdf.new belek_new_year_comparison_2026_2027_current.pdf
             rm -f drive-current.pdf
           fi
 
-          if ! pdf_has_version belek_new_year_comparison_2026_2027_current.pdf; then
-            echo "PDF does not contain HTML report version ${VERSION}" >&2
-            exit 1
-          fi
+          pdf_has_version belek_new_year_comparison_2026_2027_current.pdf
           echo "version-match PASS ${VERSION}"
 
       - name: Commit only when tracked production artifacts actually changed
