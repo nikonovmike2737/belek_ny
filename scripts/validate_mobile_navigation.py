@@ -51,8 +51,21 @@ assert '.mobile-menu-toggle{display:inline-flex' in compact, "mobile burger must
 assert '.nav{display:none}' in compact, "desktop navigation must be hidden on mobile"
 assert '@mediaprint{.mobile-menu-toggle,.mobile-menu-panel{display:none!important}}' in compact, "mobile menu must be hidden in print/PDF"
 
+# Reviews and Compare are a fixed two-button row inside every hotel card.
+# Reviews must be first, Compare second, and both stay left-aligned and horizontal on mobile.
+review_compare_pairs = re.findall(
+    r'<div class="compare-actions">\s*<a class="reviews-link"[^>]*>.*?<span>Отзывы</span></a>\s*<button class="compare-toggle"[^>]*>＋ Сравнить</button>\s*</div>',
+    html,
+    re.I | re.S,
+)
+assert len(review_compare_pairs) == 10, f"expected 10 Reviews+Compare action pairs, found {len(review_compare_pairs)}"
+assert '.compare-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "Reviews and Compare must be horizontal and left-aligned"
+assert '.compare-actions.compare-toggle,.compare-actions.reviews-link' not in compact, "unexpected malformed compare action selector"
+assert '@media(max-width:620px){.compare-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "mobile compare row must remain horizontal and left-aligned"
+assert '.compare-actions{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;width:100%;flex-wrap:nowrap}' in compact, "mobile Reviews and Compare must never stack"
+
 assert "if(event.target.closest('a'))closeMenu()" in compact, "mobile menu must close after section selection"
 assert "if(event.key==='Escape')closeMenu()" in compact, "mobile menu must close on Escape"
 assert "window.matchMedia('(min-width:681px)')" in html, "mobile menu must reset when returning to desktop width"
 
-print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current","favicon":"approved"}')
+print('{"status":"PASS","mobile_navigation":true,"items":6,"header_offset_px":76,"labels":"current","favicon":"approved","review_compare_row":"horizontal-left"}')
