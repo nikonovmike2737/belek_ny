@@ -100,12 +100,15 @@ td[data-price-trend]{white-space:nowrap}
 </style>
 
 <style id="tripadvisor-review-style">
-.compare-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.compare-actions .compare-toggle,.compare-actions .reviews-link{width:132px;min-height:40px;box-sizing:border-box;white-space:nowrap}
+.compare-row{display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap}
+.compare-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto;flex-wrap:nowrap}
+.compare-actions .compare-toggle,.compare-actions .reviews-link{width:132px;min-width:132px;max-width:132px;min-height:40px;box-sizing:border-box;white-space:nowrap;flex:0 0 132px}
+.compare-row .compare-hint{margin-left:auto}
 .reviews-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #d9e2de;background:#f7f8f6;color:#07110f;padding:10px 13px;border-radius:12px;font:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer;transition:.18s ease}
 .reviews-link:hover{transform:translateY(-1px);border-color:#00aa6c;background:#fff}
 .tripadvisor-mark{width:19px;height:19px;display:block;flex:0 0 19px}
-@media(max-width:620px){.compare-row{align-items:flex-start;flex-direction:column}.compare-actions{width:100%}.compare-actions .compare-toggle,.compare-actions .reviews-link{width:auto;flex:1;min-width:0}.compare-hint{font-size:11px}}
+@media(max-width:620px){.compare-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px}.compare-actions{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;width:100%;flex-wrap:nowrap}.compare-actions .compare-toggle,.compare-actions .reviews-link{width:132px;min-width:132px;max-width:132px;flex:0 0 132px}.compare-row .compare-hint{width:100%;margin-left:0;font-size:11px;text-align:left}}
+@media(max-width:310px){.compare-actions .compare-toggle,.compare-actions .reviews-link{width:calc((100vw - 44px)/2);min-width:0;max-width:none;flex:0 1 calc((100vw - 44px)/2);padding-left:7px;padding-right:7px}}
 @media print{.reviews-link{display:none!important}}
 </style>
 
