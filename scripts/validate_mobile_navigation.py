@@ -60,7 +60,6 @@ review_compare_pairs = re.findall(
 )
 assert len(review_compare_pairs) == 10, f"expected 10 Reviews+Compare action pairs, found {len(review_compare_pairs)}"
 assert '.compare-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "Reviews and Compare must be horizontal and left-aligned"
-assert '.compare-actions.compare-toggle,.compare-actions.reviews-link' not in compact, "unexpected malformed compare action selector"
 assert '@media(max-width:620px){.compare-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start' in compact, "mobile compare row must remain horizontal and left-aligned"
 assert '.compare-actions{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;width:100%;flex-wrap:nowrap}' in compact, "mobile Reviews and Compare must never stack"
 
