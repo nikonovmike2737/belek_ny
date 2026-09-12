@@ -39,7 +39,7 @@ jobs:
             scripts/validate_hotel_site_language.py \
             scripts/validate_public_copy.py \
             scripts/validate_mobile_navigation.py
-          git checkout origin/main -- .github/workflows/sync-current-artifacts.yml scripts/build_pdf_source.py scripts/extract_price_update_state.py
+          git checkout origin/main -- scripts/build_pdf_source.py scripts/extract_price_update_state.py
 
           CACHE_BUST="${GITHUB_RUN_ID}-$(date +%s)"
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
@@ -70,15 +70,6 @@ jobs:
               marker="m = re.search(r'data-report-version"
               pos=t.find(marker); assert pos!=-1
               p.write_text(t[:pos]+insert+'\n'+t[pos:],encoding='utf-8')
-          # Make the main validation workflow deterministic on fresh runners.
-          wf=Path('.github/workflows/sync-current-artifacts.yml')
-          s=wf.read_text(encoding='utf-8')
-          needle='          test -s data/hotel-site-links.json\n          python scripts/bootstrap_price_state.py'
-          repl='          test -s data/hotel-site-links.json\n          python -m pip install --quiet beautifulsoup4 pypdf\n          python scripts/bootstrap_price_state.py'
-          if 'beautifulsoup4 pypdf' not in s:
-              assert needle in s
-              s=s.replace(needle,repl,1)
-              wf.write_text(s,encoding='utf-8')
           PY
 
           python -m pip install --quiet beautifulsoup4 pypdf
@@ -110,8 +101,7 @@ jobs:
           git add index.html belek_new_year_comparison_2026_2027_current.pdf report/BELEK_NY_REPORT_SOURCE.html \
             data/current-price-state.json data/room-category-registry.json data/hotel-site-links.json data/public-price-summary.json data/price-update-state.json \
             docs/HOTEL_RANKING_CRITERIA_CURRENT.md docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md docs/TEXT_STYLE_SOURCE_OF_TRUTH.md docs/HOTEL_SITE_MONITORING_REPORT_RULE.md docs/SITE_STRUCTURE_CANON_CURRENT.md \
-            scripts/validate_consistency.py scripts/validate_hotel_site_language.py scripts/validate_public_copy.py scripts/validate_mobile_navigation.py \
-            .github/workflows/sync-current-artifacts.yml
+            scripts/validate_consistency.py scripts/validate_hotel_site_language.py scripts/validate_public_copy.py scripts/validate_mobile_navigation.py
           git diff --cached --quiet && { echo "No candidate diff" >&2; exit 1; }
           git commit -m "candidate: final fifteen-hotel photo release"
           git push origin HEAD:release/20260913-fifteen-hotels
