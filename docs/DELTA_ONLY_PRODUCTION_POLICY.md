@@ -26,7 +26,44 @@
 
 При конфликте старого документа с фактическим текущим продуктом нельзя молча вернуть старое поведение. Сначала синхронизировать документ с более приоритетным источником.
 
+## Экономия GitHub Actions и один production commit
+
+Для каждого следующего production release действует жёсткое правило:
+
+`ONE RELEASE = ONE PRODUCTION COMMIT`.
+
+До записи в `main` нужно собрать и проверить весь релизный state. Один итоговый production commit должен содержать все изменения, относящиеся к релизу, включая при наличии изменений:
+
+- `index.html`;
+- `belek_new_year_comparison_2026_2027_current.pdf`;
+- `report/BELEK_NY_REPORT_SOURCE.html`;
+- документацию и acceptance evidence;
+- price/state-файлы;
+- scripts/workflow/config, если они входят в scope того же релиза.
+
+Запрещены отдельные production commits для HTML, затем PDF, затем документации, а также trigger-only, timestamp-only, docs-only, cleanup, housekeeping и post-release metadata commits.
+
+Порядок работы:
+
+1. на ветке/candidate или во временном рабочем состоянии собрать все изменения;
+2. завершить HTML, PDF, docs, state и код до записи в `main`;
+3. пройти обязательные проверки до production commit;
+4. создать ровно один production commit;
+5. GitHub Actions и Pages запускаются только от этого итогового commit, если их запуск действительно требуется;
+6. post-prod smoke и release evidence не должны создавать второй commit только ради фиксации факта успешного deploy.
+
+Если после production commit sync/validation workflow обнаруживает, что canonical Drive и tracked production artifacts расходятся, workflow должен завершиться FAIL, а не создавать автоматический второй commit. Исправление делается в следующем содержательном релизе либо через rollback, если обнаружен production defect.
+
+Промежуточные candidate commits не должны сами по себе запускать production workflow. Не создавать отдельный GitHub Actions run только ради синхронизации, если итоговый production commit уже является достаточным триггером.
+
 ## Scheduled monitoring
+
+Монитор стоимости номеров запускается два раза в сутки по московскому времени:
+
+- 09:00 Europe/Moscow;
+- 21:00 Europe/Moscow.
+
+Проверка каждые 3 часа больше не используется.
 
 Перед каждым мониторингом:
 
@@ -37,8 +74,9 @@
 5. исключить служебные различия;
 6. при пустой содержательной дельте остановиться без записи;
 7. при подтверждённой дельте изменить только доказанный scope;
-8. пройти проверки, readback и release gates;
-9. создать один содержательный production commit.
+8. собрать согласованно HTML, PDF, docs/state, которые реально затронуты дельтой;
+9. пройти проверки, readback и release gates;
+10. создать один содержательный production commit со всем релизным state.
 
 Trigger-only, timestamp-only, empty и housekeeping commits запрещены.
 
@@ -56,9 +94,10 @@ Trigger-only, timestamp-only, empty и housekeeping commits запрещены.
 8. проверить реальный rendered context, включая затронутые mobile/PDF поверхности;
 9. записать canonical Drive-файлы IN PLACE с теми же file IDs;
 10. сделать readback тех же IDs;
-11. только после PASS перенести тот же проверенный state в `main` одним содержательным production commit;
-12. дождаться Pages success и проверить публичный HTML/PDF;
-13. сохранить acceptance и rollback evidence.
+11. собрать все затронутые HTML/PDF/docs/state/code изменения в один итоговый release state;
+12. только после PASS перенести тот же проверенный state в `main` ровно одним содержательным production commit;
+13. дождаться Pages success и проверить публичный HTML/PDF;
+14. сохранить acceptance и rollback evidence без второго служебного commit.
 
 ## Что считается содержательной дельтой мониторинга
 
@@ -115,10 +154,10 @@ Trigger-only, timestamp-only, empty и housekeeping commits запрещены.
 
 Для мониторинга:
 
-`published state -> confirmed delta -> updated artifacts/data -> gates PASS -> one meaningful commit -> Pages -> post-prod verification`.
+`published state -> confirmed delta -> complete HTML/PDF/docs/state -> gates PASS -> one production commit -> Pages -> post-prod verification`.
 
 Для прямой пользовательской правки:
 
-`explicit user instruction -> fresh published state -> bounded change -> A+B+C PASS -> Drive IN PLACE + readback -> one meaningful commit -> Pages -> post-prod verification`.
+`explicit user instruction -> fresh published state -> bounded change -> complete HTML/PDF/docs/state -> A+B+C PASS -> Drive IN PLACE + readback -> one production commit -> Pages -> post-prod verification`.
 
 Если соответствующей содержательной причины и зелёных gates нет, публикация запрещена.

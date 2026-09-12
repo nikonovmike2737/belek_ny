@@ -5,22 +5,16 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/sync-current-artifacts.yml"
+      - "index.html"
+      - "belek_new_year_comparison_2026_2027_current.pdf"
+      - "report/BELEK_NY_REPORT_SOURCE.html"
+      - "data/current-price-state.json"
+      - "data/price-update-state.json"
       - "data/hotel-site-links.json"
-      - "docs/HOTEL_SITE_LANGUAGE_PRIORITY_RULE.md"
-      - "docs/TEXT_STYLE_SOURCE_OF_TRUTH.md"
-      - "docs/PUBLIC_COPY_QA_CHECKLIST.md"
-      - "docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md"
-      - "docs/HOTEL_CARD_ACTIONS_AND_SITE_LINK_QA.md"
-      - "docs/DELTA_ONLY_PRODUCTION_POLICY.md"
-      - "scripts/build_pdf_source.py"
-      - "scripts/validate_consistency.py"
-      - "scripts/validate_public_copy.py"
-      - "scripts/validate_hotel_site_language.py"
-      - "scripts/validate_mobile_navigation.py"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: belek-ny-current-artifacts
@@ -116,16 +110,17 @@ jobs:
           pdf_has_version belek_new_year_comparison_2026_2027_current.pdf
           echo "version-match PASS ${VERSION}"
 
-      - name: Commit only when tracked production artifacts actually changed
+      - name: Verify release is complete in one production commit
         run: |
           set -euo pipefail
           FILES="index.html belek_new_year_comparison_2026_2027_current.pdf data/current-price-state.json data/price-update-state.json report/BELEK_NY_REPORT_SOURCE.html"
           if git diff --quiet -- $FILES && [ -z "$(git ls-files --others --exclude-standard $FILES)" ]; then
-            echo "No artifact changes; no commit and no production delta"
+            echo "One-commit release invariant PASS: no post-commit artifact drift"
             exit 0
           fi
-          git config user.name "belek-ny-drive-sync"
-          git config user.email "belek-ny-drive-sync@users.noreply.github.com"
-          git add $FILES
-          git commit -m "chore: sync current Belek NY report"
-          git push
+
+          echo "Release invariant FAIL: canonical Drive or generated state differs from the production commit." >&2
+          echo "Do not create an automatic follow-up commit. Rebuild the complete release state and publish it in one production commit." >&2
+          git status --short -- $FILES >&2
+          git diff -- $FILES >&2 || true
+          exit 1
