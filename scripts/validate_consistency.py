@@ -24,17 +24,13 @@ assert './belek_new_year_comparison_2026_2027_current.pdf' in html, "current PDF
 assert re.search(r'<a[^>]+download', html, re.I), "download attribute missing"
 assert "HISTORICAL_SNAPSHOT" in html, "historical price labeling missing"
 
-# Level A, automated subset. Only user-visible text is checked for editorial
-# symbols/statuses; scripts/styles and the print-only machine marker are removed.
-assert "—" not in html, "public HTML contains forbidden em dash"
-assert "–" not in html, "public HTML contains forbidden en dash"
 public = re.sub(r'<script\b[^>]*>.*?</script>', ' ', html, flags=re.I | re.S)
 public = re.sub(r'<style\b[^>]*>.*?</style>', ' ', public, flags=re.I | re.S)
 public = re.sub(r'<[^>]*id=["\']pdf-report-version-marker["\'][^>]*>.*?</[^>]+>', ' ', public, flags=re.I | re.S)
 public = html_lib.unescape(re.sub(r'<[^>]+>', ' ', public))
 public = re.sub(r'\s+', ' ', public)
-for token in ["·", "→", "👧", "🎾", "🏊", "💶", "✅", "⚠", "❌", "❓"]:
-    assert token not in public, f"public copy contains decorative symbol: {token}"
+for token in ["—", "–", "·", "→", "👧", "🎾", "🏊", "💶", "✅", "⚠", "❌", "❓"]:
+    assert token not in public, f"public copy contains forbidden/decorative symbol: {token}"
 for token in ["UNKNOWN", "NOT_APPLICABLE", "report_version", "HISTORICAL_SNAPSHOT"]:
     assert token not in public, f"public copy exposes internal status: {token}"
 assert "Изменение с прошлого запроса" not in public, "stale price-trend wording is forbidden"
@@ -44,7 +40,6 @@ family_pattern = r"2 взрослых\s*<br\s*/?>\s*с 1 ребёнком\s*<br\
 assert re.search(family_pattern, html, re.I), "hero family composition must be three separate lines"
 assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in html, "semicolon-separated family composition is forbidden"
 
-# Hotel card actions: exactly three actions in one row in both states.
 assert site_data is not None, "data/hotel-site-links.json missing"
 site_rows = site_data.get("hotels", [])
 assert len(site_rows) == 10, f"expected 10 canonical hotel site links, found {len(site_rows)}"
@@ -75,12 +70,13 @@ for card in cards:
     for row in (c, e):
         assert row.count('class="reviews-link"') == 1, f"{hotel_name}: each action row needs one Reviews link"
         assert 'tripadvisor.ru/' in row, f"{hotel_name}: Reviews must use Russian Tripadvisor"
-        review_m = re.search(r'<a\b([^>]*)class=["\']reviews-link["\'][^>]*>', row, re.I | re.S)
-        if not review_m:
-            review_m = re.search(r'<a\b([^>]*class=["\']reviews-link["\'][^>]*)>', row, re.I | re.S)
+        review_m = re.search(r'<a\b(?=[^>]*\bclass=["\'][^"\']*\breviews-link\b[^"\']*["\'])[^>]*>', row, re.I | re.S)
         assert review_m, f"{hotel_name}: Reviews anchor missing"
-        attrs = review_m.group(1)
+        attrs = review_m.group(0)
         assert re.search(r'target=["\']_blank["\']', attrs, re.I), f"{hotel_name}: Reviews must open new tab"
+        rel_m = re.search(r'rel=["\']([^"\']+)["\']', attrs, re.I)
+        rel = (rel_m.group(1) if rel_m else "").lower().split()
+        assert "noopener" in rel and "noreferrer" in rel, f"{hotel_name}: Reviews safe new-tab rel missing"
 
         site_anchors = re.findall(r'<a\b([^>]*)>\s*Сайт отеля\s*</a>', row, re.I | re.S)
         assert len(site_anchors) == 1, f"{hotel_name}: each action row needs one Hotel site link"
@@ -98,7 +94,6 @@ assert '@media(max-width:620px){.hotel-actions{grid-template-columns:repeat(3,mi
 assert '.hotel-card.is-open>.hotel-body>.hotel-actions-collapsed{display:none}' in compact, "collapsed action row must hide while card is open"
 assert "details.open=!details.open" in compact, "hotel details toggle logic missing"
 
-# Price update timestamp state.
 legend_m = re.search(r'<div\b([^>]*\bclass=["\'][^"\']*\bprice-trend-legend\b[^"\']*["\'][^>]*)>', html, re.I | re.S)
 assert legend_m, "price trend legend missing"
 attrs = legend_m.group(1)
@@ -118,7 +113,6 @@ assert price_state.get("previous_display") == previous_display, "previous displa
 assert price_state.get("current_display") == current_dt.strftime("%d.%m, %H:%M"), "current display mismatch"
 assert price_state.get("report_version") == version, "price state report version differs from HTML"
 
-# Price arrows: 60 exact comparable cells and visual direction derived from numbers.
 style_m = re.search(r'<style id=["\']price-trend-style["\']>(.*?)</style>', html, re.I | re.S)
 assert style_m, "price trend style block missing"
 trend_style = style_m.group(1)
@@ -137,12 +131,14 @@ for attrs, body in cells:
     assert trend == expected, f"trend {trend} does not match {prev} -> {curr}"
     has_up = bool(re.search(r'class=["\'][^"\']*\bprice-trend\b[^"\']*\bup\b[^"\']*["\'][^>]*>\s*↑\s*</span>', body, re.I | re.S))
     has_down = bool(re.search(r'class=["\'][^"\']*\bprice-trend\b[^"\']*\bdown\b[^"\']*["\'][^>]*>\s*↓\s*</span>', body, re.I | re.S))
-    if trend == "up": assert has_up and not has_down
-    elif trend == "down": assert has_down and not has_up
-    else: assert not has_up and not has_down
+    if trend == "up":
+        assert has_up and not has_down
+    elif trend == "down":
+        assert has_down and not has_up
+    else:
+        assert not has_up and not has_down
     counts[trend] += 1
 
-# Manual/editorial gate is a release requirement, not a replacement for checks above.
 assert acceptance_path.exists(), "editorial acceptance evidence missing"
 acceptance = acceptance_path.read_text(encoding="utf-8")
 final_gate = acceptance.split("## 6. Final gate", 1)[-1].split("## 7.", 1)[0]
