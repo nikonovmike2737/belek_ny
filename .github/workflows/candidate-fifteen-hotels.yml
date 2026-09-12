@@ -1,0 +1,74 @@
+name: Candidate fifteen-hotel one-pass build
+on:
+  push:
+    branches: [release/20260913-fifteen-hotels]
+    paths: ["candidate-fifteen.trigger"]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch current canonical 14-hotel HTML
+        env:
+          DRIVE_HTML_FILE_ID: "1ujohc5SxxAKPfN9_D992PGkAjdDsGzvW"
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 -H "Cache-Control: no-cache" "https://drive.usercontent.google.com/download?id=${DRIVE_HTML_FILE_ID}&export=download&confirm=t&cachebust=${GITHUB_RUN_ID}-$(date +%s)" -o index.html
+          test -s index.html
+          grep -q "Delphin Be Grand Resort" index.html
+          test "$(grep -o 'class=\"hotel-card' index.html | wc -l)" -eq 14
+      - name: Build final candidate
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          python -m pip install --quiet beautifulsoup4 pillow pypdf requests
+          python scripts/transform_fifteen.py
+          python scripts/build_fifteen_candidate.py
+          python scripts/build_pdf_source.py
+          python scripts/validate_hotel_site_language.py
+          python scripts/validate_mobile_navigation.py
+          python scripts/validate_public_copy.py
+          python scripts/validate_consistency.py
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          "$CHROME" --headless --no-sandbox --disable-gpu --no-pdf-header-footer --print-to-pdf="$(pwd)/belek_new_year_comparison_2026_2027_current.pdf" "file://$(pwd)/report/BELEK_NY_REPORT_SOURCE.html"
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          from pypdf import PdfReader
+          h=Path('index.html').read_text(encoding='utf-8')
+          v=re.search(r'data-report-version=["\']([^"\']+)',h).group(1)
+          r=PdfReader('belek_new_year_comparison_2026_2027_current.pdf')
+          text='\n'.join((p.extract_text() or '') for p in r.pages)
+          assert v in text and 'Papillon Belvil' in text
+          assert len(r.pages)>=15
+          assert h.count('class="hotel-card')==15
+          for m in ('__PHOTO_CALISTA__','__PHOTO_BEGRAND__','__PHOTO_IMPERIAL__','__PHOTO_CONCORDE__','__PHOTO_BELVIL__'): assert m not in h
+          assert h.count('data:image/jpeg;base64,') >= 15
+          print('candidate PASS pages=',len(r.pages),'version=',v)
+          PY
+          cp index.html BELEK_NY_2026_2027_CURRENT.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fifteen-hotel-release
+          if-no-files-found: error
+          path: |
+            index.html
+            BELEK_NY_2026_2027_CURRENT.html
+            belek_new_year_comparison_2026_2027_current.pdf
+            report/BELEK_NY_REPORT_SOURCE.html
+            data/current-price-state.json
+            data/room-category-registry.json
+            data/hotel-site-links.json
+            data/public-price-summary.json
+            data/price-update-state.json
+            docs/HOTEL_RANKING_CRITERIA_CURRENT.md
+            docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md
+            docs/TEXT_STYLE_SOURCE_OF_TRUTH.md
+            docs/HOTEL_SITE_MONITORING_REPORT_RULE.md
+            scripts/validate_consistency.py
+            scripts/validate_hotel_site_language.py
+            scripts/validate_public_copy.py
