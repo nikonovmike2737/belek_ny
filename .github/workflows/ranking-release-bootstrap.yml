@@ -1,0 +1,78 @@
+name: Bootstrap ranking release candidate
+
+on:
+  push:
+    branches:
+      - planning/product-operating-principles-20260912
+    paths:
+      - .release-ranking-bootstrap
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: planning/product-operating-principles-20260912
+          fetch-depth: 0
+
+      - name: Fetch canonical ranking artifacts from Drive
+        env:
+          DRIVE_HTML_FILE_ID: "1ujohc5SxxAKPfN9_D992PGkAjdDsGzvW"
+          DRIVE_PDF_FILE_ID: "1ehz9z4MH3h6vaERvJGaOR8ZPaDK5-3es"
+          EXPECTED_VERSION: "20260912T191617Z"
+        run: |
+          set -euo pipefail
+          CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-$(date +%s)"
+          curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
+            "https://drive.usercontent.google.com/download?id=${DRIVE_HTML_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
+            -o index.html.new
+          curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
+            "https://drive.usercontent.google.com/download?id=${DRIVE_PDF_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
+            -o belek_new_year_comparison_2026_2027_current.pdf.new
+          test -s index.html.new
+          grep -q "data-report-version=\"${EXPECTED_VERSION}\"" index.html.new
+          grep -q "pdf-report-version-marker.*${EXPECTED_VERSION}" index.html.new
+          test "$(head -c 5 belek_new_year_comparison_2026_2027_current.pdf.new)" = "%PDF-"
+          mv index.html.new index.html
+          mv belek_new_year_comparison_2026_2027_current.pdf.new belek_new_year_comparison_2026_2027_current.pdf
+
+      - name: Build state and validate candidate
+        env:
+          EXPECTED_VERSION: "20260912T191617Z"
+        run: |
+          set -euo pipefail
+          python scripts/extract_price_update_state.py
+          python scripts/build_pdf_source.py
+          python scripts/validate_hotel_site_language.py
+          python scripts/validate_mobile_navigation.py
+          python scripts/validate_public_copy.py
+          python scripts/validate_consistency.py
+          python -m pip install --quiet pypdf
+          python - <<'PY'
+          import os, re
+          from pathlib import Path
+          from pypdf import PdfReader
+          html = Path('index.html').read_text(encoding='utf-8')
+          version = re.search(r'data-report-version=["\']([^"\']+)', html).group(1)
+          assert version == os.environ['EXPECTED_VERSION']
+          text = '\n'.join((p.extract_text() or '') for p in PdfReader('belek_new_year_comparison_2026_2027_current.pdf').pages)
+          assert version in text, 'PDF report-version mismatch'
+          assert 'Bellis' in text and '9,2' in text, 'ranking content missing from PDF'
+          print('ranking candidate gates PASS', version)
+          PY
+
+      - name: Commit complete candidate and remove bootstrap
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/ranking-release-bootstrap.yml .release-ranking-bootstrap
+          git add -A
+          git config user.name "belek-ranking-release"
+          git config user.email "belek-ranking-release@users.noreply.github.com"
+          git diff --cached --quiet && { echo "No candidate delta"; exit 1; }
+          git commit -m "chore(candidate): assemble ranking release artifacts"
+          git push origin HEAD:planning/product-operating-principles-20260912
