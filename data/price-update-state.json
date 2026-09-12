@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "timezone": "Europe/Moscow",
-  "previous_price_update_at": "2026-09-10T13:14:00+03:00",
-  "current_price_update_at": "2026-09-10T14:00:00+03:00",
-  "previous_display": "10.09, 13:14",
-  "current_display": "10.09, 14:00",
-  "report_version": "20260910T131700Z",
+  "previous_price_update_at": "2026-09-10T14:00:00+03:00",
+  "current_price_update_at": "2026-09-12T00:11:00+03:00",
+  "previous_display": "10.09, 14:00",
+  "current_display": "12.09, 00:11",
+  "report_version": "20260911T211100Z",
   "source": "canonical HTML price-trend-legend attributes"
 }
