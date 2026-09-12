@@ -27,6 +27,7 @@ jobs:
           python -m pip install --quiet beautifulsoup4 pillow pypdf requests
           python scripts/transform_fifteen.py
           python scripts/build_fifteen_candidate.py
+          python scripts/fix_new_site_links.py
           python scripts/build_pdf_source.py
           python scripts/validate_hotel_site_language.py
           python scripts/validate_mobile_navigation.py
