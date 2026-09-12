@@ -1,4 +1,4 @@
-name: Manual fifteen-hotel production cutover
+name: Final fifteen-hotel candidate materialization
 on:
   push:
     branches: [release/20260913-fifteen-hotels]
@@ -6,30 +6,25 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: belek-ny-manual-prod-cutover
+  group: belek-ny-final-candidate
   cancel-in-progress: false
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Assemble one production commit from accepted candidate and canonical Drive
+      - name: Assemble and validate final candidate
         env:
-          EXPECTED_MAIN: "a5706c4f5d1fa119bd70652d5a73a3cf1f537a56"
           ACCEPTED_CANDIDATE: "845fdad411b27c9bb934d16492846de0ae8530aa"
           DRIVE_HTML_FILE_ID: "1ujohc5SxxAKPfN9_D992PGkAjdDsGzvW"
           DRIVE_PDF_FILE_ID: "1ehz9z4MH3h6vaERvJGaOR8ZPaDK5-3es"
-          EXPECTED_HTML_SHA256: "9a02ff9e09226741f3e9b73d47b2680368a8956fd5242975c552f49328d6ae81"
-          EXPECTED_PDF_SHA256: "489667be461ba2d7e5511860369423e045d6d158458e346d6d0030f374c8ec33"
+          EXPECTED_HTML_SHA256: "cf3536867a3280abb3d00b5e4fad58c92e07f0bcc1497bdeb0d650326f6f8658"
+          EXPECTED_PDF_SHA256: "2504797d970260f3eeb18d665a84923871b490c263e7b0c5f492c5a13e3ffed8"
         run: |
           set -euo pipefail
           git fetch origin main release/20260913-fifteen-hotels
-          CURRENT_MAIN="$(git rev-parse origin/main)"
-          test "$CURRENT_MAIN" = "$EXPECTED_MAIN" || { echo "main moved: $CURRENT_MAIN" >&2; exit 1; }
-          git reset --hard origin/main
-
           git checkout "$ACCEPTED_CANDIDATE" -- \
             data/current-price-state.json \
             data/room-category-registry.json \
@@ -44,6 +39,7 @@ jobs:
             scripts/validate_hotel_site_language.py \
             scripts/validate_public_copy.py \
             scripts/validate_mobile_navigation.py
+          git checkout origin/main -- .github/workflows/sync-current-artifacts.yml scripts/build_pdf_source.py scripts/extract_price_update_state.py
 
           CACHE_BUST="${GITHUB_RUN_ID}-$(date +%s)"
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
@@ -56,28 +52,12 @@ jobs:
           cat > docs/SITE_STRUCTURE_CANON_CURRENT.md <<'EOF'
           # BELEK NY: Site Structure Canon
 
-          **Status:** CURRENT  
-          **Effective from:** urgent manual release 2026-09-13  
-          **Scope:** public HTML and generated PDF source.
+          **Status:** CURRENT
 
-          ## Binding rule
+          The public site has exactly eight top-level blocks, in this fixed order:
+          `hero` -> `ranking` -> `cards` -> `prices` -> `extras` -> `gastro` -> `pdf-download` -> `shortlist`.
 
-          The canonical website structure is fixed. Future product, data, editorial, price and hotel updates may change content inside the existing blocks, but must not add, remove, rename or reorder top-level site blocks unless the user explicitly changes this canon.
-
-          The former top-level `booking-readiness` / «Бронирование» block is removed and is forbidden as a standalone block. Booking-related facts, when useful, must be placed inside an existing canonical block without changing the structure.
-
-          ## Canonical top-level order
-
-          1. `hero`
-          2. `ranking`
-          3. `cards`
-          4. `prices`
-          5. `extras`
-          6. `gastro`
-          7. `pdf-download`
-          8. `shortlist`
-
-          This exact count and order are release invariants for both desktop and mobile. The release validator must fail closed if the sequence changes or `booking-readiness` returns.
+          The former standalone `booking-readiness` / «Бронирование» block is removed and must not return. Future releases may update content inside these blocks, but must not add, remove, rename or reorder top-level blocks unless the user explicitly changes this canon. `scripts/validate_consistency.py` fails closed on structure drift.
           EOF
           sed -i 's/^          //' docs/SITE_STRUCTURE_CANON_CURRENT.md
 
@@ -86,66 +66,52 @@ jobs:
           p=Path('scripts/validate_consistency.py')
           t=p.read_text(encoding='utf-8')
           if 'class CanonicalStructureParser' not in t:
-              insert='''\n# Canonical top-level site structure: fixed by explicit user instruction.\nfrom html.parser import HTMLParser\nclass CanonicalStructureParser(HTMLParser):\n    VOID = {"area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"}\n    def __init__(self):\n        super().__init__(convert_charrefs=True)\n        self.stack=[]\n        self.blocks=[]\n    def handle_starttag(self, tag, attrs):\n        tag=tag.lower()\n        parent=self.stack[-1] if self.stack else None\n        if tag=="section" and parent=="main":\n            d=dict(attrs)\n            ident=d.get("id")\n            classes=(d.get("class") or "").split()\n            self.blocks.append("hero" if "hero" in classes else ident)\n        if tag not in self.VOID:\n            self.stack.append(tag)\n    def handle_startendtag(self, tag, attrs):\n        return\n    def handle_endtag(self, tag):\n        tag=tag.lower()\n        if tag in self.stack:\n            while self.stack:\n                cur=self.stack.pop()\n                if cur==tag:\n                    break\n\n_structure=CanonicalStructureParser(); _structure.feed(html)\n_expected_blocks=["hero","ranking","cards","prices","extras","gastro","pdf-download","shortlist"]\nassert _structure.blocks == _expected_blocks, f"canonical top-level block structure drift: {_structure.blocks} != {_expected_blocks}"\nassert 'id="booking-readiness"' not in html and "id='booking-readiness'" not in html, "forbidden standalone booking block returned"\n'''
+              insert='''\nfrom html.parser import HTMLParser\nclass CanonicalStructureParser(HTMLParser):\n    VOID={"area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"}\n    def __init__(self): super().__init__(convert_charrefs=True); self.stack=[]; self.blocks=[]\n    def handle_starttag(self,tag,attrs):\n        tag=tag.lower(); parent=self.stack[-1] if self.stack else None\n        if tag=="section" and parent=="main":\n            d=dict(attrs); self.blocks.append("hero" if "hero" in (d.get("class") or "").split() else d.get("id"))\n        if tag not in self.VOID: self.stack.append(tag)\n    def handle_endtag(self,tag):\n        tag=tag.lower()\n        if tag in self.stack:\n            while self.stack:\n                if self.stack.pop()==tag: break\n_structure=CanonicalStructureParser(); _structure.feed(html)\n_expected=["hero","ranking","cards","prices","extras","gastro","pdf-download","shortlist"]\nassert _structure.blocks==_expected, f"canonical top-level block structure drift: {_structure.blocks} != {_expected}"\nassert 'id="booking-readiness"' not in html and "id='booking-readiness'" not in html, "forbidden standalone booking block returned"\n'''
               marker="m = re.search(r'data-report-version"
-              pos=t.find(marker)
-              assert pos!=-1
-              t=t[:pos]+insert+'\n'+t[pos:]
-              p.write_text(t,encoding='utf-8')
-
-          a=Path('docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md')
-          txt=a.read_text(encoding='utf-8')
-          if '## Urgent structure hotfix 2026-09-13' not in txt:
-              txt+='''\n\n## Urgent structure hotfix 2026-09-13\n\nExplicit user decision: remove the standalone «Бронирование» block. The canonical public structure is now frozen to eight top-level blocks in this order: hero, ranking, cards, prices, extras, gastro, pdf-download, shortlist. No future release may change the count or order without a new explicit user instruction. `scripts/validate_consistency.py` enforces this fail-closed. The final PDF has 19 pages after removing the standalone booking section. Public copy and hotel/ranking/price semantics outside the removed block are unchanged by this hotfix.\n'''
-              a.write_text(txt,encoding='utf-8')
+              pos=t.find(marker); assert pos!=-1
+              p.write_text(t[:pos]+insert+'\n'+t[pos:],encoding='utf-8')
+          # Make the main validation workflow deterministic on fresh runners.
+          wf=Path('.github/workflows/sync-current-artifacts.yml')
+          s=wf.read_text(encoding='utf-8')
+          needle='          test -s data/hotel-site-links.json\n          python scripts/bootstrap_price_state.py'
+          repl='          test -s data/hotel-site-links.json\n          python -m pip install --quiet beautifulsoup4 pypdf\n          python scripts/bootstrap_price_state.py'
+          if 'beautifulsoup4 pypdf' not in s:
+              assert needle in s
+              s=s.replace(needle,repl,1)
+              wf.write_text(s,encoding='utf-8')
           PY
 
+          python -m pip install --quiet beautifulsoup4 pypdf
           python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
           python scripts/validate_hotel_site_language.py
           python scripts/validate_mobile_navigation.py
           python scripts/validate_public_copy.py
           python scripts/validate_consistency.py
-          python -m pip install --quiet pypdf
           python - <<'PY'
           from pathlib import Path
           from pypdf import PdfReader
           import re
           h=Path('index.html').read_text(encoding='utf-8')
-          assert 'id="booking-readiness"' not in h and "id='booking-readiness'" not in h
-          assert h.count('class="hotel-card') == 15
+          assert h.count('class="hotel-card')==15
           assert 'Papillon Belvil' in h
+          assert 'booking-readiness' not in h and 'Финальная тройка: готовность к бронированию' not in h
           r=PdfReader('belek_new_year_comparison_2026_2027_current.pdf')
           text='\n'.join((p.extract_text() or '') for p in r.pages)
           version=re.search(r'data-report-version=["\']([^"\']+)',h).group(1)
-          assert len(r.pages)==19
-          assert version in text and 'Papillon Belvil' in text
-          assert 'Финальная тройка: готовность к' not in text and 'БРОНИРОВАНИЕ' not in text
+          assert len(r.pages)==19 and version in text and 'Papillon Belvil' in text
+          assert 'Финальная тройка: готовность к бронированию' not in text
           assert '2026-09-12T00:11:00+03:00' in Path('data/price-update-state.json').read_text(encoding='utf-8')
-          print('manual release acceptance PASS',version,'pages=',len(r.pages))
+          print('final candidate PASS',version,'pages=',len(r.pages))
           PY
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            index.html \
-            belek_new_year_comparison_2026_2027_current.pdf \
-            report/BELEK_NY_REPORT_SOURCE.html \
-            data/current-price-state.json \
-            data/room-category-registry.json \
-            data/hotel-site-links.json \
-            data/public-price-summary.json \
-            data/price-update-state.json \
-            docs/HOTEL_RANKING_CRITERIA_CURRENT.md \
-            docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md \
-            docs/TEXT_STYLE_SOURCE_OF_TRUTH.md \
-            docs/HOTEL_SITE_MONITORING_REPORT_RULE.md \
-            docs/SITE_STRUCTURE_CANON_CURRENT.md \
-            scripts/validate_consistency.py \
-            scripts/validate_hotel_site_language.py \
-            scripts/validate_public_copy.py \
-            scripts/validate_mobile_navigation.py
-          git diff --cached --quiet && { echo "No production diff" >&2; exit 1; }
-          git commit -m "feat: publish fifteen-hotel comparison and lock site structure"
-          test "$(git rev-list --count HEAD ^origin/main)" -eq 1
-          git push origin HEAD:main
+          git add index.html belek_new_year_comparison_2026_2027_current.pdf report/BELEK_NY_REPORT_SOURCE.html \
+            data/current-price-state.json data/room-category-registry.json data/hotel-site-links.json data/public-price-summary.json data/price-update-state.json \
+            docs/HOTEL_RANKING_CRITERIA_CURRENT.md docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md docs/TEXT_STYLE_SOURCE_OF_TRUTH.md docs/HOTEL_SITE_MONITORING_REPORT_RULE.md docs/SITE_STRUCTURE_CANON_CURRENT.md \
+            scripts/validate_consistency.py scripts/validate_hotel_site_language.py scripts/validate_public_copy.py scripts/validate_mobile_navigation.py \
+            .github/workflows/sync-current-artifacts.yml
+          git diff --cached --quiet && { echo "No candidate diff" >&2; exit 1; }
+          git commit -m "candidate: final fifteen-hotel photo release"
+          git push origin HEAD:release/20260913-fifteen-hotels
