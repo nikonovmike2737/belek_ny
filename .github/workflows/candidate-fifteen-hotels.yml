@@ -27,6 +27,7 @@ jobs:
           python -m pip install --quiet beautifulsoup4 pillow pypdf requests
           python scripts/transform_fifteen.py
           python scripts/build_fifteen_candidate.py
+          python scripts/fix_belvil_official_photo.py
           python scripts/fix_new_site_links.py
           python scripts/fix_candidate_public_copy.py
           python scripts/extract_price_update_state.py
