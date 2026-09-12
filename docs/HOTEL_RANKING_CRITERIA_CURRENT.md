@@ -15,7 +15,7 @@ This is a high-weight criterion.
 - The absence of first-line/direct beach access must also be stated explicitly in `Риски и ограничения`.
 - Unclear evidence does not become a penalty until the absence is confirmed.
 
-For the current ten-hotel set, all ten have sufficiently supported first-line/direct-beach evidence, so no beach penalty is applied in this release.
+For the current 15-hotel set, first-line/direct-beach evidence is applied per hotel. Any confirmed absence must still be shown as a risk and -0.5 penalty.
 
 ## 2. Territory size
 
@@ -73,3 +73,10 @@ Bellis remains the control benchmark for the replacement decision rather than a 
 Use official hotel facts first. A current reputable secondary source may be used only where the official source does not publish the specific metric and the hotel identity is unambiguous. Unverified territory or beach claims do not change the score.
 
 The public HTML must show the criteria transparently. Public risks must explicitly flag any future hotel that is confirmed not to be first-line/direct-beach.
+
+
+## 7. Fifteen-hotel release
+
+Effective release: `20260912T211500Z`. Papillon Belvil is added at **9.0**. Its 90,000 m² territory adds `+0.1`; first-line/private sandy beach preserves the baseline; standard family/sports infrastructure is not double-counted as a separate entertainment bonus.
+
+Current ranking: Spice 9.6; Voyage 9.4; Calista 9.3; Susesi 9.2; Bellis 9.2; Delphin Be Grand 9.1; Papillon Belvil 9.0; Delphin Imperial 8.9; Concorde De Luxe 8.9; Rixos Park 8.7; Pine Beach 8.7; Papillon Zeugma 8.5; Xanadu 8.4; Limak Arcadia 8.1; Limak Atlantis 7.4. The top three remain Spice, Voyage and Calista.

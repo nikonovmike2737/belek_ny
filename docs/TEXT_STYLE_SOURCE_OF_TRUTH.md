@@ -322,3 +322,8 @@ Price timestamps и стрелки изменения цены меняются 
 Слой Ильяхова и Сарычевой основан на официальной интерактивной версии «Пиши, сокращай 2025». Слой Егерева переносится из Theatre Guide canon в пределах подтверждённых публичных и авторизованных материалов; full-book verification остаётся отдельной методологической задачей donor-проекта.
 
 BELEK NY переносит метод, но не театральную терминологию или бизнес-правила.
+
+
+## Ilyakhov-Egerev release gate
+
+Every production release must review all changed or newly added public copy against the Ilyakhov-Egerev editing principles before publication: remove bureaucratic filler, weak intensifiers, repetition, vague promotional wording, unnecessary introductory clauses and technical implementation language; keep concrete facts, conditions, dates and uncertainty explicit. This editorial pass is mandatory together with the existing A+B+C communication gate.

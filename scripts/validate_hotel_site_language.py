@@ -12,8 +12,8 @@ EXPECTED_PRIORITY = ["ru", "en", "de", "tr"]
 assert data.get("language_policy") == "ru-en-de-tr-fallback", "hotel site language policy must be ru-en-de-tr-fallback"
 assert data.get("language_priority") == EXPECTED_PRIORITY, "hotel site language priority must be ru -> en -> de -> tr"
 rows = data.get("hotels", [])
-assert len(rows) == 10, f"expected 10 hotel links, found {len(rows)}"
-assert len({r.get("hotel") for r in rows}) == 10, "duplicate hotel names in site map"
+assert len(rows) == 15, f"expected 10 hotel links, found {len(rows)}"
+assert len({r.get("hotel") for r in rows}) == 15, "duplicate hotel names in site map"
 
 site_map = {}
 selected_counts = {lang: 0 for lang in EXPECTED_PRIORITY}
@@ -34,7 +34,7 @@ cards = re.findall(
     html,
     re.I | re.S,
 )
-assert len(cards) == 10, f"expected 10 hotel cards, found {len(cards)}"
+assert len(cards) == 15, f"expected 10 hotel cards, found {len(cards)}"
 
 for card in cards:
     name_m = re.search(r'<div class=["\']photo-caption["\']>.*?<h3>(.*?)</h3>', card, re.I | re.S)

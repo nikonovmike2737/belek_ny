@@ -33,3 +33,5 @@
 Недоступность одной языковой версии сама по себе не меняет цену, стрелку цены, рейтинг или рекомендации. Но если из-за проверки изменился фактически выбранный рабочий URL, это содержательная неценовая дельта ссылки и она может быть опубликована в прод. Ценовые часы при этом не меняются.
 
 Публикация в прод по-прежнему разрешена только по реальной содержательной дельте согласно `docs/DELTA_ONLY_PRODUCTION_POLICY.md`.
+
+Current monitoring scope: 15 hotels, including Calista Luxury Resort, Delphin Be Grand Resort, Papillon Belvil, Delphin Imperial Antalya and Concorde De Luxe Resort. Scheduled runs only at 09:00 and 21:00 Europe/Moscow.

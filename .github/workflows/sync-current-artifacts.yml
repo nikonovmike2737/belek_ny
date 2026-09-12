@@ -40,7 +40,6 @@ jobs:
           curl -L --fail --retry 3 -H "Cache-Control: no-cache" \
             "https://drive.usercontent.google.com/download?id=${DRIVE_PDF_FILE_ID}&export=download&confirm=t&cachebust=${CACHE_BUST}" \
             -o drive-current.pdf
-
           test -s index.html.new
           grep -qi "<!DOCTYPE html" index.html.new
           grep -qi "Отель на замену Bellis" index.html.new
@@ -52,6 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s data/hotel-site-links.json
+          python -m pip install --quiet beautifulsoup4 pypdf
           python scripts/bootstrap_price_state.py
           python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
@@ -63,7 +63,6 @@ jobs:
       - name: Select or regenerate matching PDF
         run: |
           set -euo pipefail
-          python -m pip install --quiet pypdf
           VERSION="$(python - <<'PY'
           from pathlib import Path
           import re
@@ -74,7 +73,6 @@ jobs:
           print(m.group(1))
           PY
           )"
-
           pdf_has_version() {
             local pdf="$1"
             PDF_PATH="$pdf" REPORT_VERSION="$VERSION" python - <<'PY'
@@ -84,29 +82,20 @@ jobs:
           raise SystemExit(0 if environ['REPORT_VERSION'] in text else 1)
           PY
           }
-
           if pdf_has_version drive-current.pdf; then
-            echo "Drive PDF matches HTML report version"
             mv drive-current.pdf belek_new_year_comparison_2026_2027_current.pdf
           elif [ -s belek_new_year_comparison_2026_2027_current.pdf ] && pdf_has_version belek_new_year_comparison_2026_2027_current.pdf; then
-            echo "Drive public download is stale; retaining checked-in matching PDF"
             rm -f drive-current.pdf
           else
-            echo "Drive public download is stale; regenerating PDF from canonical HTML"
             CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
-            if [ -z "$CHROME" ]; then
-              echo "No Chromium-compatible browser available for PDF regeneration" >&2
-              exit 1
-            fi
+            test -n "$CHROME"
             "$CHROME" --headless --no-sandbox --disable-gpu --no-pdf-header-footer \
               --print-to-pdf="$(pwd)/belek_new_year_comparison_2026_2027_current.pdf.new" \
               "file://$(pwd)/report/BELEK_NY_REPORT_SOURCE.html"
             test -s belek_new_year_comparison_2026_2027_current.pdf.new
-            test "$(head -c 5 belek_new_year_comparison_2026_2027_current.pdf.new)" = "%PDF-"
             mv belek_new_year_comparison_2026_2027_current.pdf.new belek_new_year_comparison_2026_2027_current.pdf
             rm -f drive-current.pdf
           fi
-
           pdf_has_version belek_new_year_comparison_2026_2027_current.pdf
           echo "version-match PASS ${VERSION}"
 
@@ -118,9 +107,7 @@ jobs:
             echo "One-commit release invariant PASS: no post-commit artifact drift"
             exit 0
           fi
-
-          echo "Release invariant FAIL: canonical Drive or generated state differs from the production commit." >&2
-          echo "Do not create an automatic follow-up commit. Rebuild the complete release state and publish it in one production commit." >&2
+          echo "Release invariant FAIL: canonical Drive or generated state differs from production commit." >&2
           git status --short -- $FILES >&2
           git diff -- $FILES >&2 || true
           exit 1
