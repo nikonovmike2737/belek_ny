@@ -42,9 +42,9 @@ assert "2 взрослых; с 1 ребёнком; с 2 детьми" not in htm
 
 assert site_data is not None, "data/hotel-site-links.json missing"
 site_rows = site_data.get("hotels", [])
-assert len(site_rows) == 10, f"expected 10 canonical hotel site links, found {len(site_rows)}"
+assert len(site_rows) == 15, f"expected 10 canonical hotel site links, found {len(site_rows)}"
 site_map = {row["hotel"]: row["url"] for row in site_rows}
-assert len(site_map) == 10, "hotel site map contains duplicate hotel names"
+assert len(site_map) == 15, "hotel site map contains duplicate hotel names"
 assert all(row.get("identity_verified") is True for row in site_rows), "all hotel site links must be identity-verified"
 
 assert 'compare-toggle' not in html, "Compare button must be removed"
@@ -52,7 +52,7 @@ assert 'compareDock' not in html and 'compareModal' not in html, "Compare dock/m
 assert '.compare-row' not in html and '.compare-dock' not in html and '.compare-modal' not in html, "Compare CSS must be removed"
 
 cards = re.findall(r'<article\b[^>]*class=["\'][^"\']*\bhotel-card\b[^"\']*["\'][^>]*>.*?</article>', html, re.I | re.S)
-assert len(cards) == 10, f"expected 10 hotel cards, found {len(cards)}"
+assert len(cards) == 15, f"expected 10 hotel cards, found {len(cards)}"
 for card in cards:
     name_m = re.search(r'<div class=["\']photo-caption["\']>.*?<h3>(.*?)</h3>', card, re.I | re.S)
     assert name_m, "hotel card title missing"

@@ -190,3 +190,16 @@ Final result: ACCEPTED
 ## 7. Release rule
 
 Публикация разрешена только после фиксации A PASS + B PASS + C PASS для всех поверхностей текущего scope. При любом FAIL remediation loop продолжается.
+
+
+## Release 20260912T211500Z - 15 hotels
+
+Scope: five added hotel cards in the expanded comparison, ranking, price overview, shortlist copy, official-source hero photos and PDF.
+
+Level A: PASS. Formal/public-copy validator passes; 15 cards keep the exact three-action contract; internal ranking methodology block is absent.
+
+Level B: PASS. Changed and added copy received an Ilyakhov-Egerev editorial pass; unknown exact prices and NY conditions remain explicit.
+
+Level C: PASS after generated PDF/version validator in the bounded candidate build. The same hydrated official-source photos are embedded in web and PDF source.
+
+Final result: ACCEPTED.

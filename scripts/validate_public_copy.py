@@ -53,8 +53,8 @@ assert not re.search(r'\s/\s', public), 'public copy contains spaced slash const
 for label in ('Рейтинг','Отели','Стоимость','Услуги','Еда','Рекомендация'):
     assert label in public, f'canonical navigation term missing: {label}'
 assert 'Скачать PDF' in public, 'specific PDF CTA missing'
-assert public.count('Отзывы') >= 20, 'Reviews action missing from card states'
-assert public.count('Сайт отеля') >= 20, 'Hotel site action missing from card states'
+assert public.count('Отзывы') >= 30, 'Reviews action missing from card states'
+assert public.count('Сайт отеля') >= 30, 'Hotel site action missing from card states'
 assert 'Сравнить' not in public and 'В сравнении' not in public, 'compare copy must stay removed'
 
 # Hero family composition remains explicit and scannable.
@@ -62,3 +62,8 @@ family_pattern = r'2 взрослых\s*<br\s*/?>\s*с 1 ребёнком\s*<br\
 assert re.search(family_pattern, html, re.I), 'hero family composition must be three lines'
 
 print('{"status":"PASS","communication_level_a":"PASS","public_copy":"formal-service-hygiene"}')
+
+# Ilyakhov-Egerev release gate for changed/added public copy.
+for phrase in ('на самом деле','следует отметить','необходимо отметить','является одним из'):
+    assert phrase.lower() not in public.lower(), f'editorial gate: weak/cliche phrase: {phrase}'
+assert 'Как влияют новые критерии' not in public, 'internal ranking methodology must not be exposed as a public block'
