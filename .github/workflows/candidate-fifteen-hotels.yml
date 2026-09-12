@@ -4,7 +4,7 @@ on:
     branches: [release/20260913-fifteen-hotels]
     paths: ["candidate-fifteen.trigger"]
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
           test -s index.html
           grep -q "Delphin Be Grand Resort" index.html
           test "$(grep -o 'class=\"hotel-card' index.html | wc -l)" -eq 14
-      - name: Build final candidate
+      - name: Build and validate final candidate
         run: |
           set -euo pipefail
           sudo apt-get update -qq
@@ -28,6 +28,7 @@ jobs:
           python scripts/transform_fifteen.py
           python scripts/build_fifteen_candidate.py
           python scripts/fix_new_site_links.py
+          python scripts/extract_price_update_state.py
           python scripts/build_pdf_source.py
           python scripts/validate_hotel_site_language.py
           python scripts/validate_mobile_navigation.py
@@ -52,6 +53,31 @@ jobs:
           print('candidate PASS pages=',len(r.pages),'version=',v)
           PY
           cp index.html BELEK_NY_2026_2027_CURRENT.html
+      - name: Commit candidate artifacts on release branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            index.html \
+            belek_new_year_comparison_2026_2027_current.pdf \
+            report/BELEK_NY_REPORT_SOURCE.html \
+            data/current-price-state.json \
+            data/room-category-registry.json \
+            data/hotel-site-links.json \
+            data/public-price-summary.json \
+            data/price-update-state.json \
+            docs/HOTEL_RANKING_CRITERIA_CURRENT.md \
+            docs/EDITORIAL_COMMUNICATION_ACCEPTANCE_CURRENT.md \
+            docs/TEXT_STYLE_SOURCE_OF_TRUTH.md \
+            docs/HOTEL_SITE_MONITORING_REPORT_RULE.md \
+            scripts/validate_consistency.py \
+            scripts/validate_hotel_site_language.py \
+            scripts/validate_public_copy.py \
+            scripts/validate_mobile_navigation.py
+          git diff --cached --quiet && { echo "No candidate diff" >&2; exit 1; }
+          git commit -m "candidate: fifteen-hotel release artifacts"
+          git push origin HEAD:release/20260913-fifteen-hotels
       - uses: actions/upload-artifact@v4
         with:
           name: fifteen-hotel-release
@@ -73,3 +99,4 @@ jobs:
             scripts/validate_consistency.py
             scripts/validate_hotel_site_language.py
             scripts/validate_public_copy.py
+            scripts/validate_mobile_navigation.py
