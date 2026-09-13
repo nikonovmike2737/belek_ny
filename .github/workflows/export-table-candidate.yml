@@ -1,0 +1,21 @@
+name: Export table candidate
+on:
+  push:
+    branches: [release/20260913-table-completeness]
+    paths: [.github/table-artifact-trigger]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: table-completeness-release
+          path: |
+            index.html
+            report/BELEK_NY_REPORT_SOURCE.html
+            belek_new_year_comparison_2026_2027_current.pdf
+            data/price-update-state.json
+          if-no-files-found: error
